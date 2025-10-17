@@ -13,7 +13,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Check, Globe, Copy, Download } from "lucide-react";
-import jsPDF from "jspdf"; // 🔽 thêm thư viện jsPDF
+import jsPDF from "jspdf";
 
 interface PublishProps {
     initialData: Doc<"documents">;

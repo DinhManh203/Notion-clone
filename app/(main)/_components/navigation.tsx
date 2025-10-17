@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { 
     ChevronsLeft, 
@@ -8,8 +8,10 @@ import {
     Settings, 
     Plus ,
     Trash,
-    ChartBar,
-    MessageCircle
+    ChartNoAxesColumn,
+    Clock,
+    MessageCircle,
+    BadgeInfo
 } from "lucide-react";
 import { usePathname, useParams, useRouter } from "next/navigation";
 import React, { ElementRef, useEffect, useRef, useState } from 'react';
@@ -38,7 +40,6 @@ export const Navigation = () => {
     const params = useParams();
     const pathname = usePathname();
     const isMobile = useMediaQuery("(max-width: 768px)");
-    // const documents = useQuery(api.documents.get);
     const create = useMutation(api.documents.create);
 
     const isResizingRef = useRef(false);
@@ -46,6 +47,26 @@ export const Navigation = () => {
     const navbarRef = useRef<ElementRef<"div">>(null);
     const [isResetting, setIsResetting] = useState(false);
     const [isCollapsed, setIsCollapsed] = useState(isMobile);
+
+    // ⏰ Thêm state thời gian sử dụng
+    const [usageTime, setUsageTime] = useState(0);
+
+    useEffect(() => {
+        const start = Date.now();
+        const interval = setInterval(() => {
+            const seconds = Math.floor((Date.now() - start) / 1000);
+            setUsageTime(seconds);
+        }, 1000);
+        return () => clearInterval(interval);
+    }, []);
+
+    // Chuyển đổi thời gian ra dạng dễ đọc
+    const formatUsageTime = (seconds: number) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        if (mins === 0) return `${secs} giây`;
+        return `${mins} phút ${secs} giây`;
+    };
 
     useEffect(() => {
         if (isMobile) {
@@ -61,12 +82,9 @@ export const Navigation = () => {
         }
     }, [pathname, isMobile]);
 
-    const handleMouseDown = (
-        event: React.MouseEvent<HTMLElement, MouseEvent>
-    ) => {
+    const handleMouseDown = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
         event.preventDefault();
         event.stopPropagation();
-
         isResizingRef.current = true;
         document.addEventListener("mousemove", handleMouseMove);
         document.addEventListener("mouseup", handleMouseUp);
@@ -75,16 +93,14 @@ export const Navigation = () => {
     const handleMouseMove = (event: MouseEvent) => {
         if (!isResizingRef.current) return;
         let newWidth = event.clientX;
-
         if (newWidth < 240) newWidth = 240;
         if (newWidth > 480) newWidth = 480;
-
         if (sidebarRef.current && navbarRef.current) {
             sidebarRef.current.style.width = `${newWidth}px`;
             navbarRef.current.style.setProperty("left", `${newWidth}px`);
             navbarRef.current.style.setProperty("width", `calc(100% - ${newWidth}px)`);
         }
-    }
+    };
 
     const handleMouseUp = () => {
         isResizingRef.current = false;
@@ -96,16 +112,9 @@ export const Navigation = () => {
         if (sidebarRef.current && navbarRef.current) {
             setIsCollapsed(false);
             setIsResetting(true);
-
             sidebarRef.current.style.width = isMobile ? "100%" : "240px";
-            navbarRef.current.style.setProperty(
-                "width",
-                isMobile ? '0' : 'calc(100% - 240px)'
-            );
-            navbarRef.current.style.setProperty(
-                "left",
-                isMobile ? "100%" : "240px"
-            );
+            navbarRef.current.style.setProperty("width", isMobile ? '0' : 'calc(100% - 240px)');
+            navbarRef.current.style.setProperty("left", isMobile ? "100%" : "240px");
             setTimeout(() => setIsResetting(false), 300);
         }
     };
@@ -114,19 +123,16 @@ export const Navigation = () => {
         if (sidebarRef.current && navbarRef.current) {
             setIsCollapsed(true);
             setIsResetting(true);
-
             sidebarRef.current.style.width = "0";
             navbarRef.current.style.setProperty("width", "100%");
             navbarRef.current.style.setProperty("left", "0");
             setTimeout(() => setIsResetting(false), 300);
-
         }
-    }
+    };
 
     const handleCreate = () => {
         const promise = create({ title: "Không có tiêu đề" })
-            .then((documentId) => router.push(`/documents/${documentId}`))
-
+            .then((documentId) => router.push(`/documents/${documentId}`));
         toast.promise(promise, {
             loading: "Đang tạo ghi chú mới ...",
             success: "Ghi chú mới đã được tạo!",
@@ -142,8 +148,8 @@ export const Navigation = () => {
                     "group/sidebar h-full bg-secondary overflow-y-auto relative flex w-60 flex-col z-[99999]",
                     isResetting && "transition-all ease-in-out duration-300",
                     isMobile && "w-0"
-                )}>
-
+                )}
+            >
                 <div
                     onClick={collapse}
                     role='button'
@@ -157,80 +163,65 @@ export const Navigation = () => {
 
                 <div>
                     <UserItem />
-                    <Item 
-                        label="Tìm kiếm"
-                        icon={Search}
-                        isSearch
-                        onClick={search.onOpen}
-                    />
-                    <Item 
-                        label="Cài đặt"
-                        icon={Settings}
-                        onClick={settings.onOpen}
-                    />
-                    <Item
-                        onClick={handleCreate}
-                        label="Tạo ghi chú mới"
-                        icon={PlusCircle}
-                    />
-                    <Item
-                        onClick={() => {}}
-                        label="Chat"
-                        icon={MessageCircle}
-                    />
+                    <Item label="Tìm kiếm" icon={Search} isSearch onClick={search.onOpen} />
+                    <Item label="Cài đặt" icon={Settings} onClick={settings.onOpen} />
+                    <Item onClick={handleCreate} label="Tạo ghi chú mới" icon={PlusCircle} />
+                    <Item onClick={() => toast.info("Tính năng đang được phát triển...")} label="Chat" icon={MessageCircle} />
                 </div>
 
                 <div className="mt-4">
                     <DocumentList />
-                    <Item 
-                        onClick={handleCreate} 
-                        icon={Plus}
-                        label="Thêm ghi chú"
-                    />
+                    <Item onClick={handleCreate} icon={Plus} label="Thêm ghi chú" />
                     <Popover>
                         <PopoverTrigger className="w-full mt-4">
                             <Item label="Thùng rác" icon={Trash} />
                         </PopoverTrigger>
-                        <PopoverContent 
-                            className="p-0 w-72"
-                            side={isMobile ? "bottom" : "right"}>
+                        <PopoverContent className="p-0 w-72" side={isMobile ? "bottom" : "right"}>
                             <TrashBox />
                         </PopoverContent>
                     </Popover>
                 </div>
 
                 {/* --- Icon ở dưới cùng --- */}
-<div className="mt-auto flex items-center justify-around p-3 border-t border-neutral-200 dark:border-neutral-700">
-    <button
-        onClick={() => toast.info("Đang mở thống kê...")}
-        className="p-2 rounded-md hover:bg-neutral-200 dark:hover:bg-neutral-700 transition"
-        title="Thống kê"
-    >
-        <ChartBar className="h-5 w-5 text-muted-foreground" />
-    </button>
-    <button
-        onClick={() => toast.info("Đang mở cài đặt...")}
-        className="p-2 rounded-md hover:bg-neutral-200 dark:hover:bg-neutral-700 transition"
-        title="Cài đặt"
-    >
-        <Settings className="h-5 w-5 text-muted-foreground" />
-    </button>
-    <button
-        onClick={() => toast.info("Đang mở chat...")}
-        className="p-2 rounded-md hover:bg-neutral-200 dark:hover:bg-neutral-700 transition"
-        title="Chat"
-    >
-        <MessageCircle className="h-5 w-5 text-muted-foreground" />
-    </button>
-    <button
-        onClick={() => toast.info("Liên hệ hỗ trợ")}
-        className="p-2 rounded-md hover:bg-neutral-200 dark:hover:bg-neutral-700 transition"
-        title="Trợ giúp"
-    >
-        <MenuIcon className="h-5 w-5 text-muted-foreground" />
-    </button>
-</div>
+                <div className="mt-auto flex items-center justify-around p-3 border-t border-neutral-200 dark:border-neutral-700">
+                    <button
+                        onClick={() => toast.info("Đang mở thống kê...")}
+                        className="p-2 rounded-md hover:bg-neutral-200 dark:hover:bg-neutral-700 transition"
+                        title="Thống kê"
+                    >
+                        <ChartNoAxesColumn className="h-5 w-5 text-muted-foreground" />
+                    </button>
 
+                    {/* ⏰ Popover hiển thị thời gian sử dụng */}
+                    <Popover>
+                        <PopoverTrigger asChild>
+                            <button
+                                className="p-2 rounded-md hover:bg-neutral-200 dark:hover:bg-neutral-700 transition"
+                                title="Thời gian sử dụng"
+                            >
+                                <Clock className="h-5 w-5 text-muted-foreground" />
+                            </button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto px-3 py-1 text-sm text-muted-foreground">
+                            ⏱ Đã sử dụng: {formatUsageTime(usageTime)}
+                        </PopoverContent>
+                    </Popover>
+
+                    {/* <button
+                        onClick={() => toast.info("Đang mở chat...")}
+                        className="p-2 rounded-md hover:bg-neutral-200 dark:hover:bg-neutral-700 transition"
+                        title="Chat"
+                    >
+                        <MessageCircle className="h-5 w-5 text-muted-foreground" />
+                    </button> */}
+                    <button
+                        onClick={() => toast.info("Thông tin phiên bản: v1.0.0")}
+                        className="p-2 rounded-md hover:bg-neutral-200 dark:hover:bg-neutral-700 transition"
+                        title="Trợ giúp"
+                    >
+                        <BadgeInfo className="h-5 w-5 text-muted-foreground" />
+                    </button>
+                </div>
 
                 <div
                     onMouseDown={handleMouseDown}
@@ -238,6 +229,7 @@ export const Navigation = () => {
                     className="opacity-0 group-hover/sidebar:opacity-100 transition cursor-ew-resize absolute h-full w-1 bg-primary/10 right-0 top-0"
                 />
             </aside>
+
             <div
                 ref={navbarRef}
                 className={cn("absolute top-0 z-[99999] left-60 w-[calc(100%-240px)]",
@@ -245,22 +237,14 @@ export const Navigation = () => {
                     isMobile && "left-0 w-full"
                 )}
             >
-                {/* <nav className="bg-transparent px-3 py-2 w-full">
-                        {isCollapsed && <MenuIcon onClick={resetWidth} role="button" className="h-6 w-6 text-muted-foreground" />}
-                    </nav> */}
                 {!!params.documentId ? (
-                    <Navbar
-                        isCollapsed={isCollapsed}
-                        onResetWidth={resetWidth}
-                    />
+                    <Navbar isCollapsed={isCollapsed} onResetWidth={resetWidth} />
                 ) : (
                     <nav className="bg-transparent px-3 py-2 w-full">
                         {isCollapsed && <MenuIcon onClick={resetWidth} role="button" className="h-6 w-6 text-muted-foreground" />}
                     </nav>
                 )}
-                
             </div>
-            
         </>
-    )
-}
+    );
+};

@@ -13,6 +13,7 @@ import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { useParams } from "next/navigation";
+import { HardDriveUpload } from "lucide-react";
 
 export const CoverImageModal = () => {
     const params = useParams();
@@ -70,7 +71,7 @@ export const CoverImageModal = () => {
             <DialogContent>
                 <DialogHeader>
                     <h2 className="text-center text-lg font-semibold">
-                        Cover Image
+                        Thêm ảnh bìa
                     </h2>
                 </DialogHeader>
                 <SingleImageDropzone
@@ -79,8 +80,9 @@ export const CoverImageModal = () => {
                     value={file}
                     onChange={onChange}
                 />
-                <div>
-                    TODO: Upload image
+                <div className="flex gap-2 mt-4 text-gray-600">
+                    <HardDriveUpload className="h-5 w-5" />
+                    <span>Tải ảnh bìa lên từ máy của bạn</span>
                 </div>
             </DialogContent>
         </Dialog>

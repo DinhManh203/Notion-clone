@@ -30,16 +30,16 @@ type InputProps = {
 
 const ERROR_MESSAGES = {
   fileTooLarge(maxSize: number) {
-    return `The file is too large. Max size is ${formatFileSize(maxSize)}.`;
+    return `Ảnh này có dung lượng quá lướn. Tối đa là ${formatFileSize(maxSize)}.`;
   },
   fileInvalidType() {
-    return 'Invalid file type.';
+    return 'Định dạng tệp không phù hợp. Hãy thử lại với ảnh PNG, JPG.';
   },
   tooManyFiles(maxFiles: number) {
-    return `You can only add ${maxFiles} file(s).`;
+    return `Bạn chỉ có thể thêm ${maxFiles} file(s).`;
   },
   fileNotSupported() {
-    return 'The file is not supported.';
+    return 'Tệp này không được hỗ trợ.';
   },
 };
 
