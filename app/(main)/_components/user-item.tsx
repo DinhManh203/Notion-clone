@@ -25,7 +25,7 @@ const UserItem = () => {
                             <AvatarImage src={user?.imageUrl} />
                         </Avatar>
                         <span className='text-start font-medium line-clamp-1'>
-                            {user?.username}&apos;s Notion
+                            {user?.username}&apos;s MiNote
                         </span>
                     </div>
                     <ChevronsLeftRight className='rotate-90 ml-2 text-muted-foreground h-4 w-4' />
@@ -44,7 +44,7 @@ const UserItem = () => {
                         </div>
                         <div className='space-y-1'>
                             <p className='text-sm line-clamp-1'>
-                                {user?.username}&apos;s Notion
+                                {user?.username}&apos;s MiNote
                             </p>
                         </div>
                     </div>
@@ -52,7 +52,7 @@ const UserItem = () => {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild className='w-full cursor-pointer text-muted-foreground'>
                     <SignOutButton>
-                        Log Out
+                        Đăng xuất
                     </SignOutButton>
                 </DropdownMenuItem>
             </DropdownMenuContent>

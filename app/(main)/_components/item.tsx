@@ -66,9 +66,9 @@ const Item = ({
             .then(() => router.push("/documents"))
 
         toast.promise(promise, {
-            loading: "Moving to trash...",
-            success: "Note moved to trash!",
-            error: "Failed to archive note."
+            loading: "Đang chuyển vào thùng rác...",
+            success: "Ghi chú đã được chuyển vào thùng rác!",
+            error: "Không lưu trữ được ghi chú này!."
         })
     }
 
@@ -84,7 +84,7 @@ const Item = ({
     ) => {
         event.stopPropagation();
         if (!id) return;
-        const promise = create({ title: "Untitled", parentDocument: id })
+        const promise = create({ title: "Không có tiêu đề", parentDocument: id })
             .then((documentId) => {
                 if (!expanded) {
                     onExpand?.();
@@ -92,9 +92,9 @@ const Item = ({
                 router.push(`/documents/${documentId}`);
             });
         toast.promise(promise, {
-            loading: "Creating a new note...",
-            success: "New note created!",
-            error: "Failed to create a new note."
+            loading: "Đang tạo ghi chú mới...",
+            success: "Ghi chú mới đã được tạo!",
+            error: "Lỗi khi tạo ghi chú."
         })
     }
 
@@ -161,11 +161,11 @@ const Item = ({
                         >
                             <DropdownMenuItem onClick={onArchive}>
                                 <Trash className='h-4 w-4 mr-2' />
-                                Delete
+                                Xóa ghi chú
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <div className='text-xs text-muted-foreground p-2'>
-                                Last edited by: {user?.username}
+                                Lần cuối sửa bởi: {user?.username}
                             </div>
                         </DropdownMenuContent>
                     </DropdownMenu>
@@ -177,6 +177,7 @@ const Item = ({
                     </div>
                 </div>
             )}
+            
         </div>
     )
 }

@@ -7,7 +7,9 @@ import {
     Search, 
     Settings, 
     Plus ,
-    Trash
+    Trash,
+    ChartBar,
+    MessageCircle
 } from "lucide-react";
 import { usePathname, useParams, useRouter } from "next/navigation";
 import React, { ElementRef, useEffect, useRef, useState } from 'react';
@@ -122,13 +124,13 @@ export const Navigation = () => {
     }
 
     const handleCreate = () => {
-        const promise = create({ title: "Untitled" })
+        const promise = create({ title: "Không có tiêu đề" })
             .then((documentId) => router.push(`/documents/${documentId}`))
 
         toast.promise(promise, {
-            loading: "Creating a new note ...",
-            success: "New note created!",
-            error: "Failed to create a new note."
+            loading: "Đang tạo ghi chú mới ...",
+            success: "Ghi chú mới đã được tạo!",
+            error: "Lỗi khi tạo ghi chú."
         });
     };
 
@@ -156,20 +158,25 @@ export const Navigation = () => {
                 <div>
                     <UserItem />
                     <Item 
-                        label="Search"
+                        label="Tìm kiếm"
                         icon={Search}
                         isSearch
                         onClick={search.onOpen}
                     />
                     <Item 
-                        label="Settings"
+                        label="Cài đặt"
                         icon={Settings}
                         onClick={settings.onOpen}
                     />
                     <Item
                         onClick={handleCreate}
-                        label="New page"
+                        label="Tạo ghi chú mới"
                         icon={PlusCircle}
+                    />
+                    <Item
+                        onClick={() => {}}
+                        label="Chat"
+                        icon={MessageCircle}
                     />
                 </div>
 
@@ -178,11 +185,11 @@ export const Navigation = () => {
                     <Item 
                         onClick={handleCreate} 
                         icon={Plus}
-                        label="Add a page"
+                        label="Thêm ghi chú"
                     />
                     <Popover>
                         <PopoverTrigger className="w-full mt-4">
-                            <Item label="Trash" icon={Trash} />
+                            <Item label="Thùng rác" icon={Trash} />
                         </PopoverTrigger>
                         <PopoverContent 
                             className="p-0 w-72"
@@ -191,6 +198,39 @@ export const Navigation = () => {
                         </PopoverContent>
                     </Popover>
                 </div>
+
+                {/* --- Icon ở dưới cùng --- */}
+<div className="mt-auto flex items-center justify-around p-3 border-t border-neutral-200 dark:border-neutral-700">
+    <button
+        onClick={() => toast.info("Đang mở thống kê...")}
+        className="p-2 rounded-md hover:bg-neutral-200 dark:hover:bg-neutral-700 transition"
+        title="Thống kê"
+    >
+        <ChartBar className="h-5 w-5 text-muted-foreground" />
+    </button>
+    <button
+        onClick={() => toast.info("Đang mở cài đặt...")}
+        className="p-2 rounded-md hover:bg-neutral-200 dark:hover:bg-neutral-700 transition"
+        title="Cài đặt"
+    >
+        <Settings className="h-5 w-5 text-muted-foreground" />
+    </button>
+    <button
+        onClick={() => toast.info("Đang mở chat...")}
+        className="p-2 rounded-md hover:bg-neutral-200 dark:hover:bg-neutral-700 transition"
+        title="Chat"
+    >
+        <MessageCircle className="h-5 w-5 text-muted-foreground" />
+    </button>
+    <button
+        onClick={() => toast.info("Liên hệ hỗ trợ")}
+        className="p-2 rounded-md hover:bg-neutral-200 dark:hover:bg-neutral-700 transition"
+        title="Trợ giúp"
+    >
+        <MenuIcon className="h-5 w-5 text-muted-foreground" />
+    </button>
+</div>
+
 
                 <div
                     onMouseDown={handleMouseDown}
@@ -218,7 +258,9 @@ export const Navigation = () => {
                         {isCollapsed && <MenuIcon onClick={resetWidth} role="button" className="h-6 w-6 text-muted-foreground" />}
                     </nav>
                 )}
+                
             </div>
+            
         </>
     )
 }

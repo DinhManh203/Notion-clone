@@ -24,9 +24,9 @@ export const Banner = ({
         const promise = remove({ id: documentId });
 
         toast.promise(promise, {
-            loading: "Deleting note ...",
-            success: "Note deleted!",
-            error: "Failed to delete note."
+            loading: "Đang xóa ghi chú này ...",
+            success: "Ghi chú này đã xóa!",
+            error: "Lỗi không xóa được."
         });
 
         router.push("/documents");
@@ -36,16 +36,16 @@ export const Banner = ({
         const promise = restore({ id: documentId });
 
         toast.promise(promise, {
-            loading: "Restoring note ...",
-            success: "Note restore!",
-            error: "Failed to restore note."
+            loading: "Đang khôi phục ghi chú ...",
+            success: "Ghi chú đã được  khôi phục!",
+            error: "Lỗi khi khôi phục ghi chú."
         });
     };
 
     return (
         <div className="w-full bg-rose-500 text-center text-sm p-2 text-white flex items-center gap-x-2 justify-center">
             <p>
-                This page is in the Trash
+                Ghi chú này chuyển đến thùng rác
             </p>
             <Button
                 size={"sm"}
@@ -54,7 +54,7 @@ export const Banner = ({
                 className="border-white bg-transparent hover:bg-primary/5
                 text-white hover:text-white p-1 px-2 h-auto font-normal"
             >
-                Restore page
+                Khôi phục
             </Button>
             <ConfirmModal onConfirm={onRemove}>
                 <Button
@@ -63,7 +63,7 @@ export const Banner = ({
                     className="border-white bg-transparent hover:bg-primary/5
                 text-white hover:text-white p-1 px-2 h-auto font-normal"
                 >
-                    Delete forever
+                    Xóa vĩnh viễn !!
                 </Button>
             </ConfirmModal>
         </div>

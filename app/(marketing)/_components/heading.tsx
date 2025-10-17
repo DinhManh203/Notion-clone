@@ -13,11 +13,11 @@ export const Heading = () => {
     return (
         <div className="max-w-3xl space-y-4">
             <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold">
-                Your Ideas, Documents & Plans Unified. Welcome to <span className="underline"> Notion</span>
+                Chào mừng bạn đến với<span className="underline"> MiNote</span>
             </h1>
             <h3 className="text-base sm:text-xl md:text-2xl font-medium">
-                Notion is the connected workspace where <br />
-                better, faster work happens.
+                MiNote giúp không gian làm việc của bạn được kết nối <br />
+                tốt hơn, nhanh hơn.
             </h3>
             {isLoading && (
                 <div className="w-full flex item-center justify-center">
@@ -27,7 +27,7 @@ export const Heading = () => {
             {isAuthenticated && !isLoading && (
                 <Button asChild>
                     <Link href='/documents'>
-                        Enter Notion
+                        Đến với MiNote
                         <ArrowForwardIos className="h-4 w-4 ml-2"></ArrowForwardIos>
                     </Link>
                 </Button>
@@ -40,7 +40,7 @@ export const Heading = () => {
                     },
                 }}>
                     <Button size={'sm'}>
-                        Get Notion Free
+                        Thử MiNote miễn phí
                         <ArrowForwardIos className="h-4 w-4 ml-2"></ArrowForwardIos>
                     </Button>
                 </SignInButton>

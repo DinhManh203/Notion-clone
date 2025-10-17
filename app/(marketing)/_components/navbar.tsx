@@ -33,7 +33,7 @@ const Navbar = () => {
             }}
             >
               <Button variant={'ghost'} size={'sm'}>
-                Login
+                Đăng nhập
               </Button>
             </SignInButton>
             <SignInButton mode='modal' appearance={{
@@ -43,7 +43,7 @@ const Navbar = () => {
               },
             }}>
               <Button size={'sm'}>
-                Get Notion Free
+                Thử MiNote miễn phí
               </Button>
             </SignInButton>
           </>
@@ -52,7 +52,7 @@ const Navbar = () => {
           <>
             <Button variant='ghost' size='sm' asChild>
               <Link href='/documents'>
-                Enter Notion
+                Đến với MiNote
               </Link>
             </Button>
             <UserButton afterSwitchSessionUrl='/' appearance={{

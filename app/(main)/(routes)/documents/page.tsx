@@ -17,14 +17,14 @@ const DocumentsPage = () => {
 
   const onCreate = () => {
     const promise = create({
-      title: "Untitled"
+      title: "Không có tiêu đề"
     })
       .then((documentId) => router.push(`/documents/${documentId}`))
 
     toast.promise(promise, {
-      loading: "Creating a new note ...",
-      success: "New note created",
-      error: "Failed to create a new note."
+      loading: "Đang tạo ghi chú mới ...",
+      success: "Đã tạo ghi chú mới!",
+      error: "Lỗi khi tạo ghi chú."
     });
   };
 
@@ -45,11 +45,11 @@ const DocumentsPage = () => {
         className='hidden dark:block'
       />
       <h2 className='text-lg font-medium'>
-        Welcome to {user?.username}&apos;s Notion
+        Chào mừng {user?.username}&apos;s Mitnote
       </h2>
       <Button onClick={onCreate}>
         <PlusCircle className='h-4 w-4 mr-2' />
-        Create a note
+        Tạo ghi chú mới
       </Button>
     </div>
   );

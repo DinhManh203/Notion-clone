@@ -264,7 +264,7 @@ export const getById = query({
         if (!document) {
             throw new Error("Not found");
         }
-
+        
         if (document.isPublished && !document.isArchived) {
             return document;
         }

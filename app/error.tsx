@@ -24,11 +24,11 @@ const Error = () => {
             className="dark:block hidden"
         />
         <h2 className="text-xl font-medium">
-            Something went wrong!
+            Có gì đó bị lỗi. Hãy thử lại sau nhé!
         </h2>
         <Button asChild>
             <Link href={"/documents"}>
-                Go Back!
+                Quay trở lại!
             </Link>
         </Button>
     </div>

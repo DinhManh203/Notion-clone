@@ -13,7 +13,7 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Notion',
+  title: 'MiNote',
   description: 'Note everything you like',
   icons: {
     icon: [
