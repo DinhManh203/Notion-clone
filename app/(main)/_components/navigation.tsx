@@ -1,12 +1,12 @@
 "use client";
 
-import { 
-    ChevronsLeft, 
-    MenuIcon, 
-    PlusCircle, 
-    Search, 
-    Settings, 
-    Plus ,
+import {
+    ChevronsLeft,
+    MenuIcon,
+    PlusCircle,
+    Search,
+    Settings,
+    Plus,
     Trash,
     ChartNoAxesColumn,
     Clock,
@@ -184,14 +184,6 @@ export const Navigation = () => {
 
                 {/* --- Icon ở dưới cùng --- */}
                 <div className="mt-auto flex items-center justify-around p-3 border-t border-neutral-200 dark:border-neutral-700">
-                    <button
-                        onClick={() => toast.info("Đang mở thống kê...")}
-                        className="p-2 rounded-md hover:bg-neutral-200 dark:hover:bg-neutral-700 transition"
-                        title="Thống kê"
-                    >
-                        <ChartNoAxesColumn className="h-5 w-5 text-muted-foreground" />
-                    </button>
-
                     {/* ⏰ Popover hiển thị thời gian sử dụng */}
                     <Popover>
                         <PopoverTrigger asChild>
@@ -217,7 +209,7 @@ export const Navigation = () => {
                     <button
                         onClick={() => toast.info("Thông tin phiên bản: v1.0.0")}
                         className="p-2 rounded-md hover:bg-neutral-200 dark:hover:bg-neutral-700 transition"
-                        title="Trợ giúp"
+                        title="Thông tin phiên bản"
                     >
                         <BadgeInfo className="h-5 w-5 text-muted-foreground" />
                     </button>
