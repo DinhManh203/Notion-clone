@@ -65,7 +65,7 @@ export const getSidebar = query({
 
         const userId = identity.subject;
 
-        const documents = await ctx.db
+        const allDocuments = await ctx.db
             .query("documents")
             .withIndex("by_user_parent", (q) => 
                 q
@@ -77,6 +77,8 @@ export const getSidebar = query({
             )
             .order("desc")
             .collect();
+        
+        const documents = allDocuments.filter(doc => doc.isPinned !== true);
         
         return documents;
     },
@@ -110,12 +112,23 @@ export const create = mutation({
 
         const userId = identity.subject;
 
+        // Nếu tạo dưới một tài liệu đã ghim, tự động ghim tài liệu con
+        let isPinned = false;
+
+        if (args.parentDocument) {
+            const parent = await ctx.db.get(args.parentDocument);
+            if (parent?.isPinned) {
+                isPinned = true;
+            }
+        }
+
         const document = await ctx.db.insert("documents", {
             title: args.title,
             parentDocument: args.parentDocument,
             userId,
             isArchived: false,
             isPublished: false,
+            isPinned,
         });
 
         return document;
@@ -241,14 +254,17 @@ export const getSearch = query({
 
         const userId = identity.subject;
 
-        const documents = await ctx.db  
+        const allDocuments = await ctx.db  
             .query("documents")
             .withIndex("by_user", (q) => q.eq("userId", userId))
             .filter((q) => 
-                q.eq(q.field("isArchived"), false),
+                q.eq(q.field("isArchived"), false)
             )
             .order("desc")
-            .collect()
+            .collect();
+        
+        // Filter out pinned documents (isPinned !== true)
+        const documents = allDocuments.filter(doc => doc.isPinned !== true);
         
         return documents;
     }
@@ -394,5 +410,131 @@ export const removeCoverImage = mutation({
         });
 
         return document;
+    }
+});
+
+export const pin = mutation({
+    args: { id: v.id("documents") },
+    handler: async (ctx, args) => {
+        const identity = await ctx.auth.getUserIdentity();
+
+        if (!identity) {
+            throw new Error("Not authenticated");
+        }
+
+        const userId = identity.subject;
+
+        const existingDocument = await ctx.db.get(args.id);
+
+        if (!existingDocument) {
+            throw new Error("Not found");
+        }
+
+        if (existingDocument.userId !== userId) {
+            throw new Error("Unauthorized");
+        }
+
+        const recursivePin = async (documentId: Id<"documents">) => {
+            const children = await ctx.db
+                .query("documents")
+                .withIndex("by_user_parent", (q) =>
+                    q
+                        .eq("userId", userId)
+                        .eq("parentDocument", documentId)
+                )
+                .collect();
+
+            for (const child of children) {
+                await ctx.db.patch(child._id, {
+                    isPinned: true,
+                });
+
+                await recursivePin(child._id);
+            }
+        };
+
+        const document = await ctx.db.patch(args.id, {
+            isPinned: true,
+        });
+
+        await recursivePin(args.id);
+
+        return document;
+    }
+});
+
+export const unpin = mutation({
+    args: { id: v.id("documents") },
+    handler: async (ctx, args) => {
+        const identity = await ctx.auth.getUserIdentity();
+
+        if (!identity) {
+            throw new Error("Not authenticated");
+        }
+
+        const userId = identity.subject;
+
+        const existingDocument = await ctx.db.get(args.id);
+
+        if (!existingDocument) {
+            throw new Error("Not found");
+        }
+
+        if (existingDocument.userId !== userId) {
+            throw new Error("Unauthorized");
+        }
+
+        const recursiveUnpin = async (documentId: Id<"documents">) => {
+            const children = await ctx.db
+                .query("documents")
+                .withIndex("by_user_parent", (q) =>
+                    q
+                        .eq("userId", userId)
+                        .eq("parentDocument", documentId)
+                )
+                .collect();
+
+            for (const child of children) {
+                await ctx.db.patch(child._id, {
+                    isPinned: false,
+                });
+
+                await recursiveUnpin(child._id);
+            }
+        };
+
+        const document = await ctx.db.patch(args.id, {
+            isPinned: false,
+        });
+
+        await recursiveUnpin(args.id);
+
+        return document;
+    }
+});
+
+export const getPinned = query({
+    handler: async (ctx) => {
+        const identity = await ctx.auth.getUserIdentity();
+
+        if (!identity) {
+            throw new Error("Not authenticated");
+        }
+
+        const userId = identity.subject;
+
+        const documents = await ctx.db
+            .query("documents")
+            .withIndex("by_user", (q) => q.eq("userId", userId))
+            .filter((q) => 
+                q.and(
+                    q.eq(q.field("isArchived"), false),
+                    q.eq(q.field("isPinned"), true)
+                )
+            )
+            .order("desc")
+            .collect();
+
+        return documents;
     }
 })

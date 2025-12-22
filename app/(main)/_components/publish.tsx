@@ -180,7 +180,7 @@ export const Publish = ({
                         <div className="flex items-center gap-x-2">
                             <Globe className="text-sky-500 animate-pulse h-4 w-4" />
                             <p className="text-xs font-medium text-sky-500">
-                                Ghi chú này đang được chia sẻ!
+                                Bản ghi chú đang được chia sẻ!
                             </p>
                         </div>
                         <div className="flex items-center">

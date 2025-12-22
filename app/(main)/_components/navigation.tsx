@@ -11,9 +11,10 @@ import {
     ChartNoAxesColumn,
     Clock,
     MessageCircle,
-    BadgeInfo
+    BadgeInfo,
+    Pin
 } from "lucide-react";
-import { usePathname, useParams, useRouter } from "next/navigation";
+import { usePathname, useParams, useRouter, useSearchParams } from "next/navigation";
 import React, { ElementRef, useEffect, useRef, useState } from 'react';
 import { useMediaQuery } from 'usehooks-ts';
 import { useMutation } from "convex/react";
@@ -31,6 +32,7 @@ import { toast } from 'sonner';
 import Item from "./item";
 import { DocumentList } from "./document-list";
 import { TrashBox } from "./trash-box";
+import { PinnedBox } from "./pinned-box";
 import { Navbar } from "./navbar";
 
 export const Navigation = () => {
@@ -39,6 +41,7 @@ export const Navigation = () => {
     const search = useSearch();
     const params = useParams();
     const pathname = usePathname();
+    const searchParams = useSearchParams();
     const isMobile = useMediaQuery("(max-width: 768px)");
     const create = useMutation(api.documents.create);
 
@@ -47,6 +50,7 @@ export const Navigation = () => {
     const navbarRef = useRef<ElementRef<"div">>(null);
     const [isResetting, setIsResetting] = useState(false);
     const [isCollapsed, setIsCollapsed] = useState(isMobile);
+    const [openPinnedBox, setOpenPinnedBox] = useState(false);
 
     // ⏰ Thêm state thời gian sử dụng
     const [usageTime, setUsageTime] = useState(0);
@@ -81,6 +85,20 @@ export const Navigation = () => {
             collapse();
         }
     }, [pathname, isMobile]);
+
+    // Kiểm tra query parameter để mở PinnedBox
+    useEffect(() => {
+        if (searchParams?.get("open") === "pinned") {
+            setOpenPinnedBox(true);
+            // Xóa query parameter sau một khoảng thời gian ngắn
+            const timer = setTimeout(() => {
+                const newUrl = new URL(window.location.href);
+                newUrl.searchParams.delete("open");
+                router.replace(newUrl.pathname + newUrl.search);
+            }, 100);
+            return () => clearTimeout(timer);
+        }
+    }, [searchParams, router]);
 
     const handleMouseDown = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
         event.preventDefault();
@@ -167,6 +185,14 @@ export const Navigation = () => {
                     <Item label="Cài đặt" icon={Settings} onClick={settings.onOpen} />
                     <Item onClick={handleCreate} label="Tạo ghi chú mới" icon={PlusCircle} />
                     <Item onClick={() => toast.info("Tính năng đang được phát triển...")} label="Chat" icon={MessageCircle} />
+                    <Popover open={openPinnedBox} onOpenChange={setOpenPinnedBox}>
+                        <PopoverTrigger className="w-full mt-4">
+                            <Item label="Tài liệu đã ghim" icon={Pin} />
+                        </PopoverTrigger>
+                        <PopoverContent className="p-0 w-72" side={isMobile ? "bottom" : "right"}>
+                            <PinnedBox />
+                        </PopoverContent>
+                    </Popover>
                 </div>
 
                 <div className="mt-4">

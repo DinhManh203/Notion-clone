@@ -31,7 +31,6 @@ const DocumentIdPage = ({
     const isEditable = document ? !!document.allowEditing : false;
 
     const onChange = (content: string) => {
-        // Chỉ cho phép update khi allowEditing = true
         if (!isEditable) {
             return;
         }

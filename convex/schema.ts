@@ -7,6 +7,7 @@ export default defineSchema({
         userId: v.string(),
         isArchived: v.boolean(),
         parentDocument: v.optional(v.id("documents")),
+        isPinned: v.optional(v.boolean()),
         content: v.optional(v.string()),
         coverImage: v.optional(v.string()),
         isPublished: v.boolean(),
