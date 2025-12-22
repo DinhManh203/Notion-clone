@@ -13,7 +13,8 @@ export default defineSchema({
         isPublished: v.boolean(),
         allowEditing: v.optional(v.boolean()),
         icon: v.optional(v.string()),
+        order: v.optional(v.number()),
     })
-    .index("by_user", ["userId"])
-    .index("by_user_parent", ["userId", "parentDocument"])
+        .index("by_user", ["userId"])
+        .index("by_user_parent", ["userId", "parentDocument"])
 });

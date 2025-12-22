@@ -2,12 +2,12 @@ import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { Doc, Id } from "./_generated/dataModel";
 
-export const archive = mutation ({
+export const archive = mutation({
     args: { id: v.id("documents") },
     handler: async (ctx, args) => {
         const identity = await ctx.auth.getUserIdentity();
 
-         if(!identity) {
+        if (!identity) {
             throw new Error("Not authenticated");
         }
 
@@ -16,7 +16,7 @@ export const archive = mutation ({
         const existingDocument = await ctx.db.get(args.id);
 
         if (!existingDocument) {
-            throw new Error ("Not found");
+            throw new Error("Not found");
         }
 
         if (existingDocument.userId !== userId) {
@@ -27,7 +27,7 @@ export const archive = mutation ({
             const children = await ctx.db
                 .query("documents")
                 .withIndex("by_user_parent", (q) => (
-                    q   
+                    q
                         .eq("userId", userId)
                         .eq("parentDocument", documentId)
                 ))
@@ -59,7 +59,7 @@ export const getSidebar = query({
     handler: async (ctx, args) => {
         const identity = await ctx.auth.getUserIdentity();
 
-        if(!identity) {
+        if (!identity) {
             throw new Error("Not authenticated");
         }
 
@@ -67,19 +67,28 @@ export const getSidebar = query({
 
         const allDocuments = await ctx.db
             .query("documents")
-            .withIndex("by_user_parent", (q) => 
+            .withIndex("by_user_parent", (q) =>
                 q
                     .eq("userId", userId)
                     .eq("parentDocument", args.parentDocument)
             )
-            .filter((q) => 
+            .filter((q) =>
                 q.eq(q.field("isArchived"), false)
             )
-            .order("desc")
             .collect();
-        
+
         const documents = allDocuments.filter(doc => doc.isPinned !== true);
-        
+
+        // Sort by order field, then by creation time (desc)
+        documents.sort((a, b) => {
+            if (a.order !== undefined && b.order !== undefined) {
+                return a.order - b.order;
+            }
+            if (a.order !== undefined) return -1;
+            if (b.order !== undefined) return 1;
+            return b._creationTime - a._creationTime;
+        });
+
         return documents;
     },
 });
@@ -88,7 +97,7 @@ export const get = query({
     handler: async (ctx) => {
         const indentity = await ctx.auth.getUserIdentity();
 
-        if(!indentity) {
+        if (!indentity) {
             throw new Error("Not authenticated");
         }
 
@@ -122,6 +131,21 @@ export const create = mutation({
             }
         }
 
+        // Tính order cho document mới (lấy max order + 1)
+        const siblings = await ctx.db
+            .query("documents")
+            .withIndex("by_user_parent", (q) =>
+                q
+                    .eq("userId", userId)
+                    .eq("parentDocument", args.parentDocument)
+            )
+            .filter((q) => q.eq(q.field("isPinned"), isPinned))
+            .collect();
+
+        const maxOrder = siblings.reduce((max, doc) => {
+            return doc.order !== undefined && doc.order > max ? doc.order : max;
+        }, 0);
+
         const document = await ctx.db.insert("documents", {
             title: args.title,
             parentDocument: args.parentDocument,
@@ -129,17 +153,18 @@ export const create = mutation({
             isArchived: false,
             isPublished: false,
             isPinned,
+            order: maxOrder + 1,
         });
 
         return document;
     }
 });
 
-export const getTrash = query ({
+export const getTrash = query({
     handler: async (ctx) => {
         const identity = await ctx.auth.getUserIdentity();
 
-        if(!identity) {
+        if (!identity) {
             throw new Error("Not authenticated");
         }
 
@@ -148,13 +173,13 @@ export const getTrash = query ({
         const documents = await ctx.db
             .query("documents")
             .withIndex("by_user", (q) => q.eq("userId", userId))
-            .filter((q) => 
+            .filter((q) =>
                 q.eq(q.field("isArchived"), true),
             )
             .order("desc")
             .collect();
-        
-            return documents;
+
+        return documents;
     }
 });
 
@@ -175,7 +200,7 @@ export const restore = mutation({
             throw new Error("Not found");
         }
 
-        if ( existingDocument.userId !== userId) {
+        if (existingDocument.userId !== userId) {
             throw new Error("Unauthorized");
         }
 
@@ -189,7 +214,7 @@ export const restore = mutation({
                 ))
                 .collect();
 
-            for ( const child of children) {
+            for (const child of children) {
                 await ctx.db.patch(child._id, {
                     isArchived: false,
                 });
@@ -202,9 +227,9 @@ export const restore = mutation({
             isArchived: false,
         };
 
-        if ( existingDocument.parentDocument) {
+        if (existingDocument.parentDocument) {
             const parent = await ctx.db.get(existingDocument.parentDocument);
-            if(parent?.isArchived) {
+            if (parent?.isArchived) {
                 options.parentDocument = undefined;
             }
         }
@@ -218,11 +243,11 @@ export const restore = mutation({
 });
 
 export const remove = mutation({
-    args: { id: v.id("documents")},
+    args: { id: v.id("documents") },
     handler: async (ctx, args) => {
         const identity = await ctx.auth.getUserIdentity();
 
-        if(!identity) {
+        if (!identity) {
             throw new Error("Not authenticated");
         }
 
@@ -230,11 +255,11 @@ export const remove = mutation({
 
         const existingDocument = await ctx.db.get(args.id);
 
-        if(!existingDocument) {
+        if (!existingDocument) {
             throw new Error("Not found");
         }
 
-        if(existingDocument.userId !== userId) {
+        if (existingDocument.userId !== userId) {
             throw new Error("Unauthorized");
         }
 
@@ -254,33 +279,33 @@ export const getSearch = query({
 
         const userId = identity.subject;
 
-        const allDocuments = await ctx.db  
+        const allDocuments = await ctx.db
             .query("documents")
             .withIndex("by_user", (q) => q.eq("userId", userId))
-            .filter((q) => 
+            .filter((q) =>
                 q.eq(q.field("isArchived"), false)
             )
             .order("desc")
             .collect();
-        
+
         // Filter out pinned documents (isPinned !== true)
         const documents = allDocuments.filter(doc => doc.isPinned !== true);
-        
+
         return documents;
     }
 });
 
 export const getById = query({
-    args: { documentId: v.id("documents")},
+    args: { documentId: v.id("documents") },
     handler: async (ctx, args) => {
         const identity = await ctx.auth.getUserIdentity();
-        
+
         const document = await ctx.db.get(args.documentId);
 
         if (!document) {
             throw new Error("Not found");
         }
-        
+
         if (document.isPublished && !document.isArchived) {
             return document;
         }
@@ -300,7 +325,7 @@ export const getById = query({
 });
 
 export const update = mutation({
-    args:  {
+    args: {
         id: v.id("documents"),
         title: v.optional(v.string()),
         content: v.optional(v.string()),
@@ -322,7 +347,7 @@ export const update = mutation({
         const userId = identity?.subject;
 
         const isOwner = !!userId && existingDocument.userId === userId;
-        
+
         const isPublicEditable =
             existingDocument.isPublished &&
             !existingDocument.isArchived &&
@@ -334,14 +359,14 @@ export const update = mutation({
             patch = {
                 ...rest,
             };
-        } 
+        }
         else if (isPublicEditable) {
             if (rest.content !== undefined) {
                 patch.content = rest.content;
             } else {
                 return existingDocument;
             }
-        } 
+        }
         else {
             if (!identity) {
                 throw new Error("Not authenticated");
@@ -356,8 +381,8 @@ export const update = mutation({
 });
 
 export const removeIcon = mutation({
-    args: { id: v.id("documents")},
-    handler: async (ctx,args) => {
+    args: { id: v.id("documents") },
+    handler: async (ctx, args) => {
         const identity = await ctx.auth.getUserIdentity();
 
         if (!identity) {
@@ -372,7 +397,7 @@ export const removeIcon = mutation({
             throw new Error("Not found");
         }
 
-        if(existingDocument.userId !== userId) {
+        if (existingDocument.userId !== userId) {
             throw new Error("Unauthorized");
         }
 
@@ -405,7 +430,7 @@ export const removeCoverImage = mutation({
             throw new Error("Unauthorized")
         }
 
-        const document = await ctx.db.patch(args.id,{
+        const document = await ctx.db.patch(args.id, {
             coverImage: undefined,
         });
 
@@ -526,15 +551,57 @@ export const getPinned = query({
         const documents = await ctx.db
             .query("documents")
             .withIndex("by_user", (q) => q.eq("userId", userId))
-            .filter((q) => 
+            .filter((q) =>
                 q.and(
                     q.eq(q.field("isArchived"), false),
                     q.eq(q.field("isPinned"), true)
                 )
             )
-            .order("desc")
             .collect();
 
+        // Sort by order field, then by creation time (desc)
+        documents.sort((a, b) => {
+            if (a.order !== undefined && b.order !== undefined) {
+                return a.order - b.order;
+            }
+            if (a.order !== undefined) return -1;
+            if (b.order !== undefined) return 1;
+            return b._creationTime - a._creationTime;
+        });
+
         return documents;
+    }
+})
+
+export const reorder = mutation({
+    args: {
+        id: v.id("documents"),
+        newOrder: v.number(),
+    },
+    handler: async (ctx, args) => {
+        const identity = await ctx.auth.getUserIdentity();
+
+        if (!identity) {
+            throw new Error("Not authenticated");
+        }
+
+        const userId = identity.subject;
+
+        const document = await ctx.db.get(args.id);
+
+        if (!document) {
+            throw new Error("Not found");
+        }
+
+        if (document.userId !== userId) {
+            throw new Error("Unauthorized");
+        }
+
+        // Update the order of the document
+        await ctx.db.patch(args.id, {
+            order: args.newOrder,
+        });
+
+        return document;
     }
 })

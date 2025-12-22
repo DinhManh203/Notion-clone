@@ -8,7 +8,9 @@ import {
     Plus,
     Expand,
     MoreHorizontal,
-    Trash
+    Trash,
+    PinIcon,
+    GripVertical
 } from 'lucide-react';
 
 import { Id } from '@/convex/_generated/dataModel';
@@ -19,13 +21,16 @@ import { api } from '@/convex/_generated/api';
 import { useRouter } from 'next/navigation';
 import { useUser } from "@clerk/clerk-react";
 import { toast } from "sonner";
-import { 
-    DropdownMenu, 
-    DropdownMenuSeparator, 
+import {
+    DropdownMenu,
+    DropdownMenuSeparator,
     DropdownMenuTrigger,
     DropdownMenuContent,
     DropdownMenuItem
 } from '@/components/ui/dropdown-menu';
+import Pin from './pin';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 interface ItemProps {
     id?: Id<"documents">;
@@ -38,6 +43,7 @@ interface ItemProps {
     label: string;
     onClick?: () => void;
     icon: LucideIcon;
+    isDraggable?: boolean;
 }
 
 const Item = ({
@@ -51,17 +57,19 @@ const Item = ({
     level = 0,
     onExpand,
     expanded,
+    isDraggable = false,
 }: ItemProps) => {
     const { user } = useUser();
     const router = useRouter();
     const create = useMutation(api.documents.create);
     const archive = useMutation(api.documents.archive);
+    const pinDocument = useMutation(api.documents.pin);
 
     const onArchive = (
         event: React.MouseEvent<HTMLDivElement, MouseEvent>
     ) => {
         event.stopPropagation();
-        if(!id) return;
+        if (!id) return;
         const promise = archive({ id })
             .then(() => router.push("/documents"))
 
@@ -70,6 +78,21 @@ const Item = ({
             success: "Ghi chú đã được chuyển vào thùng rác!",
             error: "Không lưu trữ được ghi chú này!."
         })
+    }
+
+    const onPin = (
+        event: React.MouseEvent<HTMLDivElement, MouseEvent>
+    ) => {
+        event.stopPropagation();
+        if (!id) return;
+        const promise = pinDocument({ id })
+            .then(() => router.push("/documents?open=pinned"))
+
+        toast.promise(promise, {
+            loading: "Đang ghim ghi chú...",
+            success: "Ghi chú đã được ghim!",
+            error: "Lỗi khi ghim ghi chú."
+        });
     }
 
     const handleExpand = (
@@ -100,38 +123,69 @@ const Item = ({
 
     const ChevronIcon = expanded ? ChevronDown : ChevronRight;
 
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging,
+    } = useSortable({
+        id: id || 'default',
+        disabled: !isDraggable || !id
+    });
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.5 : 1,
+    };
+
     return (
         <div
+            ref={isDraggable ? setNodeRef : undefined}
+            style={isDraggable ? style : undefined}
+            {...(isDraggable ? attributes : {})}
             onClick={onClick}
             role="button"
-            style={{ paddingLeft: level ? `${(level * 12) + 12}px` : "12px" }}
             className={cn('group min-h-[27px] text-sm py-1 pr-3 w-full hover:bg-primary/5 flex items-center text-muted-foreground font-medium',
                 active && "bg-primary/5 text-primary"
             )}>
-            {!!id && (
+            {isDraggable && id && (
                 <div
-                    role='button'
-                    className='h-full rounded-sm hover:bg-neutral-300 dark:hover:bg-neutral-600 mr-1'
-                    onClick={handleExpand}
+                    {...listeners}
+                    className='cursor-grab active:cursor-grabbing p-1 hover:bg-neutral-200 dark:hover:bg-neutral-600 rounded mr-1'
+                    onClick={(e) => e.stopPropagation()}
                 >
-                    <ChevronIcon
-                        className='h-4 w-4 shrink-0 text-muted-foreground/50'
+                    <GripVertical className='h-4 w-4 text-muted-foreground/50' />
+                </div>
+            )}
+            <div style={{ paddingLeft: isDraggable ? "0px" : (level ? `${(level * 20) + 20}px` : "14px") }} className="flex items-center flex-1 min-w-0">
+                {!!id && (
+                    <div
+                        role='button'
+                        className='h-full rounded-sm hover:bg-neutral-300 dark:hover:bg-neutral-600 mr-1'
+                        onClick={handleExpand}
+                    >
+                        <ChevronIcon
+                            className='h-4 w-4 shrink-0 text-muted-foreground/50'
+                        />
+                    </div>
+                )}
+                {documentIcon ? (
+                    <div className='shrink-0 mr-2 text-[18px]'>
+                        {documentIcon}
+                    </div>
+                ) : (
+                    <Icon
+                        className='shrink-0 h-[18px] w-[18px] mr-2 text-muted-foreground'
                     />
-                </div>
-            )}
-            {documentIcon ? (
-                <div className='shrink-0 mr-2 text-[18px]'>
-                    {documentIcon}
-                </div>
-            ) : (
-                <Icon
-                    className='shrink-0 h-[18px] w-[18px] mr-2 text-muted-foreground'
-                />
-            )}
+                )}
 
-            <span className='truncate'>
-                {label}
-            </span>
+                <span className='truncate'>
+                    {label}
+                </span>
+            </div>
             {isSearch && (
                 <kbd className='ml-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-muted-foreground opacity-100'>
                     <span className='text-[8px]'>
@@ -146,7 +200,7 @@ const Item = ({
                             onClick={(e) => e.stopPropagation()}
                             asChild
                         >
-                            <div 
+                            <div
                                 role='button'
                                 className='opacity-0 group-hover:opacity-100 h-full ml-auto rounded-sm hover:bg-neutral-300 dark:hover:bg-neutral-600'
                             >
@@ -159,6 +213,11 @@ const Item = ({
                             side='right'
                             forceMount
                         >
+                            <DropdownMenuItem onClick={onPin}>
+                                <PinIcon className='h-4 w-4 mr-2' />
+                                Ghim
+                            </DropdownMenuItem>
+
                             <DropdownMenuItem onClick={onArchive}>
                                 <Trash className='h-4 w-4 mr-2' />
                                 Xóa ghi chú
@@ -177,7 +236,7 @@ const Item = ({
                     </div>
                 </div>
             )}
-            
+
         </div>
     )
 }

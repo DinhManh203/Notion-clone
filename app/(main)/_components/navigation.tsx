@@ -111,7 +111,7 @@ export const Navigation = () => {
     const handleMouseMove = (event: MouseEvent) => {
         if (!isResizingRef.current) return;
         let newWidth = event.clientX;
-        if (newWidth < 240) newWidth = 240;
+        if (newWidth < 250) newWidth = 250;
         if (newWidth > 480) newWidth = 480;
         if (sidebarRef.current && navbarRef.current) {
             sidebarRef.current.style.width = `${newWidth}px`;
@@ -189,7 +189,7 @@ export const Navigation = () => {
                         <PopoverTrigger className="w-full mt-4">
                             <Item label="Tài liệu đã ghim" icon={Pin} />
                         </PopoverTrigger>
-                        <PopoverContent className="p-0 w-72" side={isMobile ? "bottom" : "right"}>
+                        <PopoverContent className="w-72" side={isMobile ? "bottom" : "right"}>
                             <PinnedBox />
                         </PopoverContent>
                     </Popover>
@@ -202,15 +202,13 @@ export const Navigation = () => {
                         <PopoverTrigger className="w-full mt-4">
                             <Item label="Thùng rác" icon={Trash} />
                         </PopoverTrigger>
-                        <PopoverContent className="p-0 w-72" side={isMobile ? "bottom" : "right"}>
+                        <PopoverContent className="w-72" side={isMobile ? "bottom" : "right"}>
                             <TrashBox />
                         </PopoverContent>
                     </Popover>
                 </div>
 
-                {/* --- Icon ở dưới cùng --- */}
                 <div className="mt-auto flex items-center justify-around p-3 border-t border-neutral-200 dark:border-neutral-700">
-                    {/* ⏰ Popover hiển thị thời gian sử dụng */}
                     <Popover>
                         <PopoverTrigger asChild>
                             <button

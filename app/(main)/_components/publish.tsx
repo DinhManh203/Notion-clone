@@ -15,6 +15,12 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Check, Globe, Copy, Download } from "lucide-react";
 import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
+import { BlockNoteEditor, PartialBlock } from "@blocknote/core";
+import { BlockNoteView } from "@blocknote/mantine";
+import "@blocknote/mantine/style.css";
+import { useTheme } from "next-themes";
+import { createRoot } from "react-dom/client";
 
 interface PublishProps {
     initialData: Doc<"documents">;
@@ -25,6 +31,7 @@ export const Publish = ({
 }: PublishProps) => {
     const origin = useOrigin();
     const update = useMutation(api.documents.update);
+    const { resolvedTheme } = useTheme();
 
     const [copied, setCopied] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -65,7 +72,6 @@ export const Publish = ({
         setTimeout(() => setCopied(false), 1000);
     };
 
-    // 🔽 HÀM TRÍCH XUẤT TEXT TỪ JSON CONTENT
     const extractText = (blocks: any[]): string[] => {
         let texts: string[] = [];
         blocks.forEach((block) => {
@@ -115,14 +121,14 @@ export const Publish = ({
             a.click();
             URL.revokeObjectURL(url);
 
-            toast.success("✅ Đã tải xuống file .txt!");
+            toast.success("Đã tải xuống file .txt!");
         } catch (err) {
             toast.error("Lỗi khi tạo file .txt");
             console.error(err);
         }
     };
 
-    const onDownloadPDF = () => {
+    const onDownloadPDF = async () => {
         try {
             const content = initialData.content;
             if (!content) {
@@ -144,13 +150,104 @@ export const Publish = ({
                 toast.error("Dữ liệu không đúng định dạng!");
                 return;
             }
-            const textArray = extractText(parsed);
-            const doc = new jsPDF();
 
-            const textContent = textArray.join("\n\n");
-            const lines = doc.splitTextToSize(textContent, 180);
-            doc.text(lines, 15, 20);
-            doc.save(`${initialData.title || "note"}.pdf`);
+            // Create a temporary container for the editor
+            const tempContainer = document.createElement("div");
+            tempContainer.style.position = "absolute";
+            tempContainer.style.left = "-9999px";
+            tempContainer.style.top = "0";
+            tempContainer.style.width = "800px";
+            tempContainer.style.padding = "40px";
+            tempContainer.style.backgroundColor = "white";
+
+            // Add title if exists
+            if (initialData.title) {
+                const titleElement = document.createElement("h1");
+                titleElement.textContent = initialData.title;
+                titleElement.style.fontSize = "32px";
+                titleElement.style.fontWeight = "bold";
+                titleElement.style.marginBottom = "24px";
+                titleElement.style.color = "black";
+                tempContainer.appendChild(titleElement);
+            }
+
+            // Create editor container
+            const editorContainer = document.createElement("div");
+            editorContainer.className = "bn-container bn-default-styles";
+            editorContainer.style.backgroundColor = "white";
+            editorContainer.style.color = "black";
+            tempContainer.appendChild(editorContainer);
+
+            document.body.appendChild(tempContainer);
+
+            // Create a temporary BlockNote editor instance
+            const tempEditor = BlockNoteEditor.create({
+                initialContent: parsed as PartialBlock[]
+            });
+
+            // Render the editor using React
+            await new Promise<void>((resolve) => {
+                const EditorComponent = () => {
+                    return (
+                        <BlockNoteView
+                            editor={tempEditor}
+                            theme="light"
+                            editable={false}
+                        />
+                    );
+                };
+
+                const root = createRoot(editorContainer);
+                root.render(<EditorComponent />);
+
+                // Wait for editor to render
+                setTimeout(() => {
+                    resolve();
+                }, 1000);
+            });
+
+            // Convert to canvas using html2canvas
+            const canvas = await html2canvas(tempContainer, {
+                scale: 2,
+                useCORS: true,
+                logging: false,
+                backgroundColor: "#ffffff",
+                allowTaint: true
+            });
+
+            // Remove temporary container
+            document.body.removeChild(tempContainer);
+
+            // Convert canvas to image
+            const imgData = canvas.toDataURL("image/png");
+
+            // Calculate PDF dimensions
+            const imgWidth = 210; // A4 width in mm
+            const pageHeight = 297; // A4 height in mm
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+            // Create PDF
+            const pdf = new jsPDF({
+                orientation: "portrait",
+                unit: "mm",
+                format: "a4"
+            });
+
+            let heightLeft = imgHeight;
+            let position = 0;
+
+            // Add image to PDF (handle multiple pages if needed)
+            pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+            heightLeft -= pageHeight;
+
+            while (heightLeft > 0) {
+                position = heightLeft - imgHeight;
+                pdf.addPage();
+                pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+                heightLeft -= pageHeight;
+            }
+
+            pdf.save(`${initialData.title || "note"}.pdf`);
 
             toast.success("✅ Đã tải xuống file PDF!");
         } catch (err) {

@@ -18,7 +18,7 @@ const Pin = ({ itemId }: { itemId: string }) => {
 
   const handlePin = async () => {
     if (!document) return;
-    
+
     try {
       const promise = pinDocument({ id: itemId as Id<"documents"> });
       toast.promise(promise, {
@@ -29,7 +29,7 @@ const Pin = ({ itemId }: { itemId: string }) => {
           return "Lỗi khi ghim. Vui lòng thử lại.";
         },
       });
-      
+
       promise.then(() => {
         router.push("/documents?open=pinned");
       });
@@ -40,8 +40,9 @@ const Pin = ({ itemId }: { itemId: string }) => {
   };
 
   const isPinned = document?.isPinned ?? false;
+  const hasParent = document?.parentDocument !== undefined;
 
-  if (isPinned) {
+  if (isPinned || hasParent) {
     return null;
   }
 
