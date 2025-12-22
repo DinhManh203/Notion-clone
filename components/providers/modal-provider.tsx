@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { SettingsModal } from "@/components/modals/settings-modal";
 import { CoverImageModal } from "@/components/modals/cover-image-modal";
+import { ChatModal } from "@/components/modals/chat-modal";
 
 export const ModalProvider = () => {
     const [isMounted, setIsMounted] = useState(false);
@@ -19,6 +20,7 @@ export const ModalProvider = () => {
         <>
             <SettingsModal />
             <CoverImageModal />
+            <ChatModal />
         </>
     );
 };
