@@ -27,7 +27,6 @@ import {
 } from "@/components/ui/popover";
 import { useSearch } from "@/hooks/use-search";
 import { useSettings } from "@/hooks/use-settings";
-import { useChat } from "@/hooks/use-chat";
 import UserItem from "./user-item";
 import { toast } from 'sonner';
 import Item from "./item";
@@ -40,7 +39,6 @@ export const Navigation = () => {
     const router = useRouter();
     const settings = useSettings();
     const search = useSearch();
-    const chat = useChat();
     const params = useParams();
     const pathname = usePathname();
     const searchParams = useSearchParams();
@@ -182,7 +180,7 @@ export const Navigation = () => {
                     <Item label="Tìm kiếm" icon={Search} isSearch onClick={search.onOpen} />
                     <Item label="Cài đặt" icon={Settings} onClick={settings.onOpen} />
                     <Item onClick={handleCreate} label="Tạo ghi chú mới" icon={PlusCircle} />
-                    <Item onClick={chat.onOpen} label="Chat" icon={MessageCircle} />
+                    <Item onClick={() => router.push('/chat')} label="Chat" icon={MessageCircle} />
                     <Popover open={openPinnedBox} onOpenChange={setOpenPinnedBox}>
                         <PopoverTrigger className="w-full mt-4">
                             <Item label="Tài liệu đã ghim" icon={Pin} />

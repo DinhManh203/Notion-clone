@@ -13,7 +13,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useChat } from "@/hooks/use-chat";
-import { getRandomChatTitle } from "@/lib/random-chat-titles";
 import {
     MessageCircle,
     Plus,
@@ -74,14 +73,21 @@ export const ChatModal = () => {
         }
     }, [activeSession]);
 
+    // Reset activeSessionId if session becomes invalid
+    useEffect(() => {
+        if (activeSessionId && activeSession === null) {
+            setActiveSessionId(null);
+            toast.error("Phiên chat không tồn tại hoặc đã bị xóa");
+        }
+    }, [activeSessionId, activeSession]);
+
     const handleCreateSession = async () => {
         try {
-            const randomTitle = getRandomChatTitle();
             const sessionId = await createSession({
-                title: randomTitle,
+                title: "Đoạn chat mới",
             });
             setActiveSessionId(sessionId);
-            toast.success("Đã tạo chat mới!");
+            toast.success("Đã tạo đoạn chat mới!");
         } catch (error) {
             toast.error("Lỗi khi tạo chat");
         }

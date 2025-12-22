@@ -28,7 +28,7 @@ export const getSessionById = query({
         const identity = await ctx.auth.getUserIdentity();
 
         if (!identity) {
-            throw new Error("Not authenticated");
+            return null;
         }
 
         const userId = identity.subject;
@@ -36,11 +36,11 @@ export const getSessionById = query({
         const session = await ctx.db.get(args.sessionId);
 
         if (!session) {
-            throw new Error("Session not found");
+            return null;
         }
 
         if (session.userId !== userId) {
-            throw new Error("Unauthorized");
+            return null;
         }
 
         return session;
@@ -53,14 +53,14 @@ export const getMessages = query({
         const identity = await ctx.auth.getUserIdentity();
 
         if (!identity) {
-            throw new Error("Not authenticated");
+            return [];
         }
 
         const userId = identity.subject;
 
         const session = await ctx.db.get(args.sessionId);
         if (!session || session.userId !== userId) {
-            throw new Error("Unauthorized");
+            return [];
         }
 
         const messages = await ctx.db
@@ -168,7 +168,6 @@ export const deleteSession = mutation({
             await ctx.db.delete(message._id);
         }
 
-        // Delete the session
         await ctx.db.delete(args.sessionId);
 
         return args.sessionId;
@@ -236,6 +235,10 @@ export const sendMessage = action({
             sessionId: args.sessionId,
         });
 
+        if (!session) {
+            throw new Error("Session not found");
+        }
+
         const messages = await ctx.runQuery(api.chat.getMessages, {
             sessionId: args.sessionId,
         });
@@ -275,6 +278,40 @@ export const sendMessage = action({
                 role: "assistant",
                 content: aiMessage,
             });
+
+            // Auto-generate title from first message if session has no title
+            if (!session.title || session.title === "Đoạn chat mới") {
+                try {
+                    // Ask AI to generate a short title
+                    const titlePrompt = `Tạo một tiêu đề ngắn gọn (tối đa 6 từ) bằng tiếng Việt cho cuộc trò chuyện này dựa trên câu hỏi: "${args.message}". Chỉ trả về tiêu đề, không giải thích.`;
+
+                    const titleResult = await model.generateContent(titlePrompt);
+                    const titleResponse = titleResult.response;
+                    let generatedTitle = titleResponse.text().trim();
+
+                    // Remove quotes if present
+                    generatedTitle = generatedTitle.replace(/^["']|["']$/g, '');
+
+                    // Limit to 50 characters
+                    if (generatedTitle.length > 50) {
+                        generatedTitle = generatedTitle.slice(0, 47) + "...";
+                    }
+
+                    // Update session title
+                    await ctx.runMutation(api.chat.updateSession, {
+                        sessionId: args.sessionId,
+                        title: generatedTitle,
+                    });
+                } catch (titleError) {
+                    console.error("Error generating title:", titleError);
+                    // Fallback: use first 50 chars of message
+                    const fallbackTitle = args.message.slice(0, 47) + "...";
+                    await ctx.runMutation(api.chat.updateSession, {
+                        sessionId: args.sessionId,
+                        title: fallbackTitle,
+                    });
+                }
+            }
 
             return {
                 success: true,

@@ -6,7 +6,6 @@ import {
     ChevronDown,
     ChevronRight,
     Plus,
-    Expand,
     MoreHorizontal,
     Trash,
     PinIcon,
