@@ -353,7 +353,7 @@ export const SettingsModal = () => {
                     <Popover>
                         <PopoverTrigger asChild>
                             <Button variant="ghost" className="w-full justify-between">
-                                Hiệu ứng màn hình
+                                Hiệu ứng màn hình (Chỉ dành cho chế độ tối)
                                 <Settings size={24} />
                             </Button>
                         </PopoverTrigger>

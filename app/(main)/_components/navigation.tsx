@@ -52,7 +52,6 @@ export const Navigation = () => {
     const [isCollapsed, setIsCollapsed] = useState(isMobile);
     const [openPinnedBox, setOpenPinnedBox] = useState(false);
 
-    // ⏰ Thêm state thời gian sử dụng
     const [usageTime, setUsageTime] = useState(0);
 
     useEffect(() => {
@@ -64,7 +63,6 @@ export const Navigation = () => {
         return () => clearInterval(interval);
     }, []);
 
-    // Chuyển đổi thời gian ra dạng dễ đọc
     const formatUsageTime = (seconds: number) => {
         const mins = Math.floor(seconds / 60);
         const secs = seconds % 60;
@@ -86,11 +84,9 @@ export const Navigation = () => {
         }
     }, [pathname, isMobile]);
 
-    // Kiểm tra query parameter để mở PinnedBox
     useEffect(() => {
         if (searchParams?.get("open") === "pinned") {
             setOpenPinnedBox(true);
-            // Xóa query parameter sau một khoảng thời gian ngắn
             const timer = setTimeout(() => {
                 const newUrl = new URL(window.location.href);
                 newUrl.searchParams.delete("open");
@@ -130,9 +126,9 @@ export const Navigation = () => {
         if (sidebarRef.current && navbarRef.current) {
             setIsCollapsed(false);
             setIsResetting(true);
-            sidebarRef.current.style.width = isMobile ? "100%" : "240px";
-            navbarRef.current.style.setProperty("width", isMobile ? '0' : 'calc(100% - 240px)');
-            navbarRef.current.style.setProperty("left", isMobile ? "100%" : "240px");
+            sidebarRef.current.style.width = isMobile ? "100%" : "250px";
+            navbarRef.current.style.setProperty("width", isMobile ? '0' : 'calc(100% - 250px)');
+            navbarRef.current.style.setProperty("left", isMobile ? "100%" : "250px");
             setTimeout(() => setIsResetting(false), 300);
         }
     };
@@ -248,7 +244,7 @@ export const Navigation = () => {
 
             <div
                 ref={navbarRef}
-                className={cn("absolute top-0 z-[99999] left-60 w-[calc(100%-240px)]",
+                className={cn("absolute top-0 z-[99999] left-60 w-[calc(100%-250px)]",
                     isResetting && "transition-all ease-in-out duration-300",
                     isMobile && "left-0 w-full"
                 )}
