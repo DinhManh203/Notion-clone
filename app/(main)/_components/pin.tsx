@@ -54,7 +54,7 @@ const Pin = ({ itemId }: { itemId: string }) => {
         onClick={handlePin}
         className="flex items-center gap-1"
       >
-        <PinIcon className="w-4 h-4 text-gray-500" />
+        <PinIcon className="w-4 h-4" />
         Ghim
       </Button>
     </div>

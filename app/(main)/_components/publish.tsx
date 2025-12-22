@@ -13,7 +13,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { Check, Globe, Copy, Download } from "lucide-react";
+import { Check, Globe, Copy, Download, SquareArrowOutUpRight, File, Notebook } from "lucide-react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { BlockNoteEditor, PartialBlock } from "@blocknote/core";
@@ -260,6 +260,7 @@ export const Publish = ({
         <Popover>
             <PopoverTrigger asChild>
                 <Button size={"sm"} variant={"ghost"}>
+                    <SquareArrowOutUpRight className="w-4 h-4 mr-1" />
                     Chia sẻ
                     {initialData.isPublished && (
                         <Globe className="text-sky-500 w-4 h-4 ml-2" />
@@ -267,7 +268,7 @@ export const Publish = ({
                 </Button>
             </PopoverTrigger>
             <PopoverContent
-                className="w-100"
+                className="w-[20vw]"
                 align="end"
                 alignOffset={8}
                 forceMount
@@ -300,7 +301,7 @@ export const Publish = ({
                         </div>
 
                         <div className="flex items-center gap-2 flex-1">
-                            <div className="flex-1 text-xs">Cho phép chỉnh sửa</div>
+                            <div className="flex-1 flex-row text-xs">Cho phép chỉnh sửa</div>
                             <Switch
                                 checked={!!initialData.allowEditing}
                                 onCheckedChange={(v) =>
@@ -312,23 +313,15 @@ export const Publish = ({
                             />
                         </div>
 
-                        <div className="flex gap-2">
-                            <Button
-                                size={"sm"}
-                                className="flex-1 text-xs"
-                                disabled={isSubmitting}
-                                onClick={onUnpublish}
-                            >
-                                Hủy xuất bản
-                            </Button>
-
+                        <div className="flex gap-2 items-center">
+                            <div className="flex-1 text-xs">Tải xuống</div>
                             <Button
                                 size={"sm"}
                                 variant={"outline"}
                                 className="flex-1 text-xs"
                                 onClick={onDownloadTXT}
                             >
-                                <Download className="w-4 h-4 mr-1" />
+                                <Notebook className="w-4 h-4 mr-1" />
                                 TXT
                             </Button>
 
@@ -338,8 +331,19 @@ export const Publish = ({
                                 className="flex-1 text-xs"
                                 onClick={onDownloadPDF}
                             >
-                                <Download className="w-4 h-4 mr-1" />
+                                <File className="w-4 h-4 mr-1" />
                                 PDF
+                            </Button>
+                        </div>
+
+                        <div className="flex gap-2">
+                            <Button
+                                size={"sm"}
+                                className="flex-1 text-xs"
+                                disabled={isSubmitting}
+                                onClick={onUnpublish}
+                            >
+                                Hủy xuất bản
                             </Button>
                         </div>
                     </div>
