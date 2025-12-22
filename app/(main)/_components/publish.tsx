@@ -82,7 +82,6 @@ export const Publish = ({
         return texts;
     };
 
-    // 🔽 TẢI DẠNG TXT
     const onDownloadTXT = () => {
         try {
             const content = initialData.content;
@@ -122,7 +121,6 @@ export const Publish = ({
         }
     };
 
-    // 🔽 TẢI DẠNG PDF
     const onDownloadPDF = () => {
         try {
             const content = initialData.content;
@@ -170,7 +168,6 @@ export const Publish = ({
                     )}
                 </Button>
             </PopoverTrigger>
-
             <PopoverContent
                 className="w-80"
                 align="end"
@@ -214,7 +211,6 @@ export const Publish = ({
                                 Hủy xuất bản
                             </Button>
 
-                            {/* 🔽 Nút TXT */}
                             <Button
                                 size={"sm"}
                                 variant={"outline"}
@@ -225,7 +221,6 @@ export const Publish = ({
                                 TXT
                             </Button>
 
-                            {/* 🔽 Nút PDF */}
                             <Button
                                 size={"sm"}
                                 variant={"outline"}

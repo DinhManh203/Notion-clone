@@ -6,7 +6,7 @@ export default function ClickSparkWrapper({ children }: { children: React.ReactN
   return (
     <ClickSpark
       sparkColor="#fff"
-      sparkSize={10}
+      sparkSize={8}
       sparkRadius={15}
       sparkCount={8}
       duration={400}
