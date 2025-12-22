@@ -290,17 +290,10 @@ export const update = mutation({
         content: v.optional(v.string()),
         coverImage: v.optional(v.string()),
         icon: v.optional(v.string()),
-        isPublished: v.optional(v.boolean())
+        isPublished: v.optional(v.boolean()),
+        allowEditing: v.optional(v.boolean()),
     },
     handler: async (ctx, args) => {
-        const identity = await ctx.auth.getUserIdentity();
-
-        if(!identity) {
-            throw new Error("Unauthenticated");
-        }
-
-        const userId = identity.subject;
-
         const { id, ...rest } = args;
 
         const existingDocument = await ctx.db.get(args.id);
@@ -309,13 +302,38 @@ export const update = mutation({
             throw new Error("Not found");
         }
 
-        if (existingDocument.userId !== userId) {
+        const identity = await ctx.auth.getUserIdentity();
+        const userId = identity?.subject;
+
+        const isOwner = !!userId && existingDocument.userId === userId;
+        
+        const isPublicEditable =
+            existingDocument.isPublished &&
+            !existingDocument.isArchived &&
+            !!existingDocument.allowEditing;
+
+        let patch: Partial<Doc<"documents">> = {};
+
+        if (isOwner) {
+            patch = {
+                ...rest,
+            };
+        } 
+        else if (isPublicEditable) {
+            if (rest.content !== undefined) {
+                patch.content = rest.content;
+            } else {
+                return existingDocument;
+            }
+        } 
+        else {
+            if (!identity) {
+                throw new Error("Not authenticated");
+            }
             throw new Error("Unauthorized");
         }
 
-        const document = await ctx.db.patch(args.id, {
-            ...rest,
-        });
+        const document = await ctx.db.patch(args.id, patch);
 
         return document;
     },

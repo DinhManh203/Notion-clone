@@ -12,6 +12,7 @@ import { api } from "@/convex/_generated/api";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { Check, Globe, Copy, Download } from "lucide-react";
 import jsPDF from "jspdf";
 
@@ -201,13 +202,18 @@ export const Publish = ({
                             </Button>
                         </div>
 
-                        {/* <div className="flex items-center gap-2 flex-1">
+                        <div className="flex items-center gap-2 flex-1">
                             <div className="flex-1 text-xs">Cho phép chỉnh sửa</div>
                             <Switch
                                 checked={!!initialData.allowEditing}
-                                onCheckedChange={(v) => update({ id: initialData._id, allowEditing: v })}
+                                onCheckedChange={(v) =>
+                                    update({
+                                        id: initialData._id,
+                                        allowEditing: v,
+                                    })
+                                }
                             />
-                        </div> */}
+                        </div>
 
                         <div className="flex gap-2">
                             <Button
