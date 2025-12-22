@@ -10,6 +10,7 @@ export default defineSchema({
         content: v.optional(v.string()),
         coverImage: v.optional(v.string()),
         isPublished: v.boolean(),
+        allowEditing: v.optional(v.boolean()),
         icon: v.optional(v.string()),
     })
     .index("by_user", ["userId"])

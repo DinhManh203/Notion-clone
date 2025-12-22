@@ -103,7 +103,7 @@ export const Toolbar = ({
                             size={"sm"}
                         >
                             <Smile className="h-4 w-4 mr-2" />
-                            Add icon
+                            Thêm biểu tượng
                         </Button>
                     </IconPicker>
                 )}
@@ -115,7 +115,7 @@ export const Toolbar = ({
                         size={"sm"}
                     >
                         <ImageIcon className="h-4 w-4 mr-2" />
-                        Add cover
+                        Thêm ảnh bìa
                     </Button>
                 )}
             </div>

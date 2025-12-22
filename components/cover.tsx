@@ -60,7 +60,7 @@ export const Cover = ({
                         size={"sm"}
                     >
                         <ImageIcon className="h-4 w-4 mr-2" />
-                        Change cover
+                        Thay đổi ảnh bìa
                     </Button>
                     <Button
                         onClick={onRemove}
@@ -69,7 +69,7 @@ export const Cover = ({
                         size={"sm"}
                     >
                         <X className="h-4 w-4 mr-2" />
-                        Remove
+                        Loại bỏ ảnh bìa
                     </Button>
                 </div>
             )}

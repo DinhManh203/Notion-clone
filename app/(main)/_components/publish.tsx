@@ -169,7 +169,7 @@ export const Publish = ({
                 </Button>
             </PopoverTrigger>
             <PopoverContent
-                className="w-80"
+                className="w-100"
                 align="end"
                 alignOffset={8}
                 forceMount
@@ -200,6 +200,14 @@ export const Publish = ({
                                 )}
                             </Button>
                         </div>
+
+                        {/* <div className="flex items-center gap-2 flex-1">
+                            <div className="flex-1 text-xs">Cho phép chỉnh sửa</div>
+                            <Switch
+                                checked={!!initialData.allowEditing}
+                                onCheckedChange={(v) => update({ id: initialData._id, allowEditing: v })}
+                            />
+                        </div> */}
 
                         <div className="flex gap-2">
                             <Button
