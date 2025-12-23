@@ -73,7 +73,7 @@ export function ChatSidebar({
                         "
                     >
                         <Plus className="h-4 w-4" />
-                        Đoạn chat mới
+                        Tạo cuộc trò chuyện mới
                     </Button>
                 </div>
 

@@ -15,6 +15,8 @@ import type {
 } from "convex/server";
 import type * as chat from "../chat.js";
 import type * as documents from "../documents.js";
+import type * as googleSheets from "../googleSheets.js";
+import type * as googleSheetsActions from "../googleSheetsActions.js";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -27,6 +29,8 @@ import type * as documents from "../documents.js";
 declare const fullApi: ApiFromModules<{
   chat: typeof chat;
   documents: typeof documents;
+  googleSheets: typeof googleSheets;
+  googleSheetsActions: typeof googleSheetsActions;
 }>;
 export declare const api: FilterApi<
   typeof fullApi,

@@ -131,9 +131,9 @@ export function ChatArea({
                             <Menu className="h-5 w-5" />
                         </Button>
                     )}
-                    {/* <h1 className="font-semibold truncate">
+                    <h1 className="font-semibold truncate">
                         {activeSession?.title || "Chat"}
-                    </h1> */}
+                    </h1>
                 </div>
 
                 <Popover open={settingsOpen} onOpenChange={setSettingsOpen}>
@@ -145,7 +145,7 @@ export function ChatArea({
                     <PopoverContent className="w-80">
                         <div className="space-y-4">
                             <div className="flex items-center justify-between pb-2 border-b">
-                                <h3 className="font-semibold text-sm">Cài đặt Chat</h3>
+                                <h3 className="font-semibold text-sm">Cài đặt</h3>
                                 <Button
                                     variant="ghost"
                                     size="sm"
@@ -207,13 +207,13 @@ export function ChatArea({
                                             alt="MiNote Bot"
                                             className="w-8 h-8 rounded-full"
                                         />
-                                        <p className="text-xs text-muted-foreground">
-                                            Bot AI
+                                        <p className="text-[14px] text-muted-foreground">
+                                            MiNote - Nhân viên hỗ trợ (AI)
                                         </p>
                                     </div>
                                 ) : (
                                     <div className="flex items-center gap-2">
-                                        <p className="text-xs text-muted-foreground">
+                                        <p className="text-[14px] text-muted-foreground">
                                             {user?.username}
                                         </p>
                                         <img
@@ -233,7 +233,7 @@ export function ChatArea({
                                             : "bg-muted"
                                     )}
                                 >
-                                    <p className="whitespace-pre-wrap text-xs leading-relaxed">
+                                    <p className="whitespace-pre-wrap text-[14px] leading-relaxed">
                                         {message.content}
                                     </p>
                                 </div>
@@ -260,20 +260,21 @@ export function ChatArea({
             </div>
 
             {/* Input Area */}
-            <div className="p-4">
-                <div className="max-w-3xl mx-auto flex gap-2">
+            <div className="p-4 mb-10">
+                <div className="max-w-3xl mx-auto flex gap-2 items-center">
                     <Input
                         value={messageInput}
                         onChange={(e) => setMessageInput(e.target.value)}
                         onKeyPress={handleKeyPress}
-                        placeholder="Nhập tin nhắn..."
+                        placeholder="Nhập tin nhắn . . ."
                         disabled={isSending}
-                        className="flex-1 focus:ring-none"
+                        className="flex-1 border-none outline-none fo bg-secondary"
                     />
                     <Button
                         onClick={handleSendMessage}
                         disabled={!messageInput.trim() || isSending}
                         size="icon"
+                        className="h-9 w-12"
                     >
                         {isSending ? (
                             <Loader2 className="h-4 w-4 animate-spin" />

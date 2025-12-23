@@ -260,10 +260,36 @@ export const sendMessage = action({
                 },
             });
 
-            let promptInstruction = "Bạn đang đóng vai nhân viên hỗ trợ khách hàng của ứng dụng ghi chú trực tuyến MiNote.Hãy luôn trả lời bằng tiếng Việt (trừ khi người dùng yêu cầu ngôn ngữ khác).Giữ giọng điệu thân thiện, gần gũi, dễ hiểu, giống như đang hỗ trợ người dùng thực tế trong ứng dụng.";
-
+            let promptInstruction = "Bạn đang đóng vai nhân viên hỗ trợ khách hàng của ứng dụng ghi chú trực tuyến MiNote. Hãy luôn trả lời bằng tiếng Việt, trừ khi người dùng yêu cầu ngôn ngữ khác. Xưng hô với người dùng 'mình - bạn'";
             if (session.systemPrompt) {
                 promptInstruction = session.systemPrompt + "\n\n" + promptInstruction;
+            }
+
+            // Lấy dữ liệu từ Google Sheets để bổ sung vào cơ sở kiến ​​thức.
+            let sheetData = null;
+            try {
+                const csvUrl = process.env.GOOGLE_SHEET_CSV_URL;
+                console.log("CSV URL from env:", csvUrl ? "Found" : "Not found");
+
+                if (csvUrl) {
+                    const sheetIdMatch = csvUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
+                    const sheetId = sheetIdMatch ? sheetIdMatch[1] : 'default';
+                    console.log("Sheet ID:", sheetId);
+
+                    console.log("Fetching fresh sheet data...");
+                    sheetData = await ctx.runAction(api.googleSheetsActions.fetchSheetData, {});
+                    console.log("Sheet data fetched:", sheetData ? `${sheetData.length} chars` : "null");
+                }
+            } catch (error) {
+                console.error("Error loading sheet data:", error);
+            }
+
+            // Thêm dữ liệu trang tính vào lời nhắc nếu có.
+            if (sheetData) {
+                console.log("Thêm dữ liệu trang tính vào prompt");
+                promptInstruction = promptInstruction + "\n\n" + sheetData + "\n\nSử dụng dữ liệu sẵn có làm nguồn tham khảo để phản hồi tin nhắn cho người dùng. Trả lời bằng ngôn ngữ tự nhiên, sáng tạo và thân thiện (Hạn chế chào người dùng khi đang hỏi). Nội dung cần đúng trọng tâm, rõ ràng, đúng bối cảnh, vừa đủ độ dài, tránh trả lời lan man hoặc thô cứng.";
+            } else {
+                console.log("Không có sẵn dữ liệu trang tính");
             }
 
             let prompt = `${promptInstruction}\n\nUser: ${args.message}`;
@@ -281,7 +307,7 @@ export const sendMessage = action({
             if (!session.title || session.title === "Đoạn chat mới") {
                 try {
                     // Hãy yêu cầu AI tạo ra một tiêu đề ngắn.
-                    const titlePrompt = `Tạo một tiêu đề ngắn gọn (tối đa 6 từ) bằng tiếng Việt cho cuộc trò chuyện này dựa trên câu hỏi: "${args.message}". Chỉ trả về tiêu đề, không giải thích.`;
+                    const titlePrompt = `Tạo một tiêu đề ngắn gọn bằng tiếng Việt cho cuộc trò chuyện này dựa trên câu hỏi: "${args.message}". Chỉ trả về tiêu đề, không giải thích.`;
 
                     const titleResult = await model.generateContent(titlePrompt);
                     const titleResponse = titleResult.response;
@@ -290,8 +316,8 @@ export const sendMessage = action({
                     generatedTitle = generatedTitle.replace(/^["']|["']$/g, '');
 
                     // Giới hạn 50 ký tự
-                    if (generatedTitle.length > 50) {
-                        generatedTitle = generatedTitle.slice(0, 47) + "...";
+                    if (generatedTitle.length > 105) {
+                        generatedTitle = generatedTitle.slice(0, 100) + "...";
                     }
 
                     await ctx.runMutation(api.chat.updateSession, {
@@ -302,7 +328,7 @@ export const sendMessage = action({
                     console.error("Lỗi khi đang tạo Tiêu đề:", titleError);
 
                     // Sử dụng 50 tin nhắn đầu tiên của tin nhắn
-                    const fallbackTitle = args.message.slice(0, 47) + "...";
+                    const fallbackTitle = args.message.slice(0, 100) + "...";
                     await ctx.runMutation(api.chat.updateSession, {
                         sessionId: args.sessionId,
                         title: fallbackTitle,
@@ -315,7 +341,7 @@ export const sendMessage = action({
                 message: aiMessage,
             };
         } catch (error) {
-            console.error("Gemini API error:", error);
+            console.error("Gemini API lỗi:", error);
 
             const errorMessage = "Xin lỗi, đã có lỗi xảy ra khi xử lý yêu cầu của bạn. Vui lòng thử lại.";
             await ctx.runMutation(api.chat.addMessage, {

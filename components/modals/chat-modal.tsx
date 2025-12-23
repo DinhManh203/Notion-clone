@@ -236,7 +236,7 @@ export const ChatModal = () => {
                                         <PopoverContent className="w-80">
                                             <div className="space-y-4">
                                                 <div className="flex items-center justify-between pb-2 border-b">
-                                                    <h3 className="font-semibold text-sm">Cài đặt Chat</h3>
+                                                    <h3 className="font-semibold text-sm">Cài đặt</h3>
                                                     <Button
                                                         variant="ghost"
                                                         size="sm"
@@ -335,7 +335,7 @@ export const ChatModal = () => {
                                     value={messageInput}
                                     onChange={(e) => setMessageInput(e.target.value)}
                                     onKeyPress={handleKeyPress}
-                                    placeholder="Nhập tin nhắn..."
+                                    placeholder="Nhập tin nhắn . . ."
                                     disabled={isSending}
                                 />
                                 <Button

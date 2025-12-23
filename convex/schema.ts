@@ -49,9 +49,7 @@ export default defineSchema({
   externalData: defineTable({
     userId: v.string(),
     source: v.union(
-      v.literal("google_sheet"),
-      v.literal("airtable"),
-      v.literal("other")
+      v.literal("google_sheet")
     ),
     sourceId: v.string(),
     name: v.optional(v.string()),

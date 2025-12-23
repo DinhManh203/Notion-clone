@@ -46,7 +46,7 @@ export default function RootLayout({
           <EdgeStoreProvider>
             <ClickSparkWrapper>
             <ThemeProvider attribute="class" defaultTheme='system' enableSystem disableTransitionOnChange storageKey='notion-theme-2'>
-              <Toaster position="bottom-center" />
+              <Toaster position="top-center" />
               <ModalProvider />
               {children}
             </ThemeProvider>
