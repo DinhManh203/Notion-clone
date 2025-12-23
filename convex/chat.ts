@@ -179,6 +179,7 @@ export const addMessage = mutation({
         sessionId: v.id("chatSessions"),
         role: v.union(v.literal("user"), v.literal("assistant"), v.literal("system")),
         content: v.string(),
+        documentIds: v.optional(v.array(v.id("documents"))),
     },
     handler: async (ctx, args) => {
         const identity = await ctx.auth.getUserIdentity();
@@ -198,6 +199,7 @@ export const addMessage = mutation({
             sessionId: args.sessionId,
             role: args.role,
             content: args.content,
+            documentIds: args.documentIds,
             createdAt: Date.now(),
         });
 
@@ -213,6 +215,7 @@ export const sendMessage = action({
     args: {
         sessionId: v.id("chatSessions"),
         message: v.string(),
+        documentIds: v.optional(v.array(v.id("documents"))),
     },
     handler: async (ctx, args) => {
         const identity = await ctx.auth.getUserIdentity();
@@ -225,6 +228,7 @@ export const sendMessage = action({
             sessionId: args.sessionId,
             role: "user",
             content: args.message,
+            documentIds: args.documentIds,
         });
 
         const session = await ctx.runQuery(api.chat.getSessionById, {
@@ -263,6 +267,36 @@ export const sendMessage = action({
             let promptInstruction = "Bạn đang đóng vai nhân viên hỗ trợ khách hàng của ứng dụng ghi chú trực tuyến MiNote. Hãy luôn trả lời bằng tiếng Việt, trừ khi người dùng yêu cầu ngôn ngữ khác. Xưng hô với người dùng 'mình - bạn'";
             if (session.systemPrompt) {
                 promptInstruction = session.systemPrompt + "\n\n" + promptInstruction;
+            }
+
+            // Truy xuất nội dung tài liệu nếu tài liệu được gắn thẻ.
+            let documentContext = "";
+            if (args.documentIds && args.documentIds.length > 0) {
+                console.log("Fetching content for", args.documentIds.length, "documents");
+
+                for (const docId of args.documentIds) {
+                    try {
+                        const document = await ctx.runQuery(api.documents.getById, {
+                            documentId: docId,
+                        });
+
+                        if (document && document.content) {
+                            // Giới hạn độ dài nội dung để tránh vượt quá giới hạn token (tối đa 3000 ký tự mỗi tài liệu).
+                            const content = document.content.length > 3000
+                                ? document.content.substring(0, 3000) + "..."
+                                : document.content;
+
+                            documentContext += `\n\n=== TÀI LIỆU: ${document.title} ===\n${content}\n=== KẾT THÚC TÀI LIỆU ===\n`;
+                        }
+                    } catch (error) {
+                        console.error("Error fetching document:", docId, error);
+                    }
+                }
+
+                if (documentContext) {
+                    console.log("Document context added:", documentContext.length, "chars");
+                    promptInstruction = promptInstruction + "\n\n" + documentContext + "\n\nHãy phân tích các tài liệu trên và sử dụng thông tin từ đó để trả lời câu hỏi của người dùng. Nếu câu hỏi liên quan đến nội dung tài liệu, hãy trích dẫn và giải thích cụ thể.";
+                }
             }
 
             // Lấy dữ liệu từ Google Sheets để bổ sung vào cơ sở kiến ​​thức.

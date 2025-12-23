@@ -40,6 +40,7 @@ export default defineSchema({
       v.literal("system")
     ),
     content: v.string(),
+    documentIds: v.optional(v.array(v.id("documents"))),
     createdAt: v.number(),
   })
     .index("by_session", ["sessionId"])

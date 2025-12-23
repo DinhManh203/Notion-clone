@@ -6,7 +6,7 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Send, Loader2, MessageCircle, Menu, Settings } from "lucide-react";
+import { Send, Loader2, Menu, Settings, X, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import {
@@ -35,7 +35,11 @@ export function ChatArea({
     const [isSending, setIsSending] = useState(false);
     const [settingsOpen, setSettingsOpen] = useState(false);
     const [editTitle, setEditTitle] = useState("");
+    const [taggedDocuments, setTaggedDocuments] = useState<Array<{ _id: Id<"documents">, title: string, icon?: string }>>([]);
+    const [showDocumentPicker, setShowDocumentPicker] = useState(false);
+    const [cursorPosition, setCursorPosition] = useState(0);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
 
     const messages = useQuery(
         api.chat.getMessages,
@@ -45,33 +49,80 @@ export function ChatArea({
         api.chat.getSessionById,
         activeSessionId ? { sessionId: activeSessionId } : "skip"
     );
+    const userDocuments = useQuery(api.documents.getSearch);
 
     const updateSession = useMutation(api.chat.updateSession);
     const sendMessage = useAction(api.chat.sendMessage);
 
-    // Auto-scroll to bottom
+    // Tự động cuộn xuống cuối trang
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages]);
 
-    // Initialize edit title
+    // Khởi tạo chỉnh sửa tiêu đề
     useEffect(() => {
         if (activeSession) {
             setEditTitle(activeSession.title || "");
         }
     }, [activeSession]);
 
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        const cursorPos = e.target.selectionStart || 0;
+
+        setMessageInput(value);
+        setCursorPosition(cursorPos);
+
+        // Kiểm tra xem người dùng đã nhập ký tự "@" để hiển thị trình chọn tài liệu chưa.
+        const textBeforeCursor = value.substring(0, cursorPos);
+        const lastAtSymbol = textBeforeCursor.lastIndexOf('@');
+
+        if (lastAtSymbol !== -1 && lastAtSymbol === cursorPos - 1) {
+            setShowDocumentPicker(true);
+        } else if (showDocumentPicker && !textBeforeCursor.endsWith('@')) {
+            setShowDocumentPicker(false);
+        }
+    };
+
+    const handleSelectDocument = (doc: { _id: Id<"documents">, title: string, icon?: string }) => {
+        // Thêm vào danh sách tài liệu đã được gắn thẻ nếu chưa được gắn thẻ.
+        if (!taggedDocuments.find(d => d._id === doc._id)) {
+            setTaggedDocuments([...taggedDocuments, doc]);
+        }
+
+        // Xóa @ khỏi đầu vào
+        const textBeforeCursor = messageInput.substring(0, cursorPosition);
+        const lastAtSymbol = textBeforeCursor.lastIndexOf('@');
+        const newInput = messageInput.substring(0, lastAtSymbol) + messageInput.substring(cursorPosition);
+
+        setMessageInput(newInput);
+        setShowDocumentPicker(false);
+
+        // Tập trung lại vào đầu vào
+        inputRef.current?.focus();
+    };
+
+    const handleRemoveTag = (docId: Id<"documents">) => {
+        setTaggedDocuments(taggedDocuments.filter(d => d._id !== docId));
+    };
+
     const handleSendMessage = async () => {
         if (!messageInput.trim() || !activeSessionId || isSending) return;
 
         const message = messageInput.trim();
+        const documentIds = taggedDocuments.length > 0
+            ? taggedDocuments.map(d => d._id)
+            : undefined;
+
         setMessageInput("");
+        setTaggedDocuments([]);
         setIsSending(true);
 
         try {
             await sendMessage({
                 sessionId: activeSessionId,
                 message,
+                documentIds,
             });
         } catch (error) {
             toast.error("Lỗi khi gửi tin nhắn");
@@ -233,6 +284,24 @@ export function ChatArea({
                                             : "bg-muted"
                                     )}
                                 >
+                                    {/* Hiển thị các tài liệu được gắn thẻ cho tin nhắn người dùng */}
+                                    {message.role === "user" && message.documentIds && message.documentIds.length > 0 && (
+                                        <div className="flex flex-wrap gap-1 mb-2 pb-2 border-b border-primary-foreground/20">
+                                            {message.documentIds.map((docId) => {
+                                                const doc = userDocuments?.find(d => d._id === docId);
+                                                return doc ? (
+                                                    <div
+                                                        key={docId}
+                                                        className="inline-flex items-center gap-1 px-2 py-0.5 bg-primary-foreground/20 rounded text-xs"
+                                                    >
+                                                        <FileText className="h-6 w-4" />
+                                                        <span>{doc.icon} {doc.title}</span>
+                                                    </div>
+                                                ) : null;
+                                            })}
+                                        </div>
+                                    )}
+
                                     <p className="whitespace-pre-wrap text-[14px] leading-relaxed">
                                         {message.content}
                                     </p>
@@ -261,27 +330,73 @@ export function ChatArea({
 
             {/* Input Area */}
             <div className="p-4 mb-10">
-                <div className="max-w-3xl mx-auto flex gap-2 items-center">
-                    <Input
-                        value={messageInput}
-                        onChange={(e) => setMessageInput(e.target.value)}
-                        onKeyPress={handleKeyPress}
-                        placeholder="Nhập tin nhắn . . ."
-                        disabled={isSending}
-                        className="flex-1 border-none outline-none fo bg-secondary"
-                    />
-                    <Button
-                        onClick={handleSendMessage}
-                        disabled={!messageInput.trim() || isSending}
-                        size="icon"
-                        className="h-9 w-12"
-                    >
-                        {isSending ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                            <Send className="h-4 w-4" />
+                <div className="max-w-3xl mx-auto">
+                    {/* Tagged Documents Chips */}
+                    {taggedDocuments.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mb-2">
+                            {taggedDocuments.map(doc => (
+                                <div
+                                    key={doc._id}
+                                    className="inline-flex items-center gap-1 px-4 py-1 bg-accent rounded-md text-[14px]"
+                                >
+                                    <FileText className="h-3 w-3" />
+                                    <span>{doc.icon} {doc.title}</span>
+                                    <X
+                                        className="h-3 w-3 cursor-pointer hover:text-destructive ml-3"
+                                        onClick={() => handleRemoveTag(doc._id)}
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    {/* Nhập liệu bằng Trình chọn tài liệu */}
+                    <div className="relative flex gap-2 items-center">
+                        {/* Menu Chọn tài liệu */}
+                        {showDocumentPicker && userDocuments && userDocuments.length > 0 && (
+                            <div className="absolute bottom-full mb-2 w-full max-h-60 overflow-y-auto bg-popover border rounded-md shadow-lg z-50">
+                                <div className="p-2 text-xs text-muted-foreground border-b">
+                                    Chọn tài liệu để phân tích
+                                </div>
+                                {userDocuments.map(doc => (
+                                    <div
+                                        key={doc._id}
+                                        onClick={() => handleSelectDocument({
+                                            _id: doc._id,
+                                            title: doc.title,
+                                            icon: doc.icon
+                                        })}
+                                        className="px-3 py-2 hover:bg-accent cursor-pointer flex items-center gap-2 text-sm"
+                                    >
+                                        <FileText className="h-4 w-4" />
+                                        <span>{doc.icon} {doc.title}</span>
+                                    </div>
+                                ))}
+                            </div>
                         )}
-                    </Button>
+
+                        <Input
+                            ref={inputRef}
+                            value={messageInput}
+                            onChange={handleInputChange}
+                            onKeyUp={handleKeyPress}
+                            placeholder="Nhập tin nhắn (gõ @ để tag tài liệu) . . ."
+                            disabled={isSending}
+                            className="flex-1 border-none outline-none fo bg-secondary"
+                        />
+                        <Button
+                            onClick={handleSendMessage}
+                            disabled={!messageInput.trim() || isSending}
+                            size="icon"
+                            className="h-9 w-12"
+                        >
+                            {isSending ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                                <Send className="h-4 w-4" />
+                            )}
+                        </Button>
+                    </div>
                 </div>
             </div>
         </div>

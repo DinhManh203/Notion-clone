@@ -9,11 +9,15 @@ import { useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
+import { usePrefetchChat } from '@/hooks/use-prefetch';
 
 const DocumentsPage = () => {
   const router = useRouter();
   const { user } = useUser();
   const create = useMutation(api.documents.create);
+
+  // Prefetch chat data in background to speed up navigation
+  usePrefetchChat();
 
   const onCreate = () => {
     const promise = create({

@@ -45,15 +45,15 @@ export default function RootLayout({
         <ConvexClientProvider>
           <EdgeStoreProvider>
             <ClickSparkWrapper>
-            <ThemeProvider attribute="class" defaultTheme='system' enableSystem disableTransitionOnChange storageKey='notion-theme-2'>
-              <Toaster position="top-center" />
-              <ModalProvider />
-              {children}
-            </ThemeProvider>
-          </ClickSparkWrapper>
-        </EdgeStoreProvider>
-      </ConvexClientProvider>
-    </body>
+              <ThemeProvider attribute="class" defaultTheme='system' enableSystem disableTransitionOnChange storageKey='notion-theme-2'>
+                <Toaster position="top-center" />
+                <ModalProvider />
+                {children}
+              </ThemeProvider>
+            </ClickSparkWrapper>
+          </EdgeStoreProvider>
+        </ConvexClientProvider>
+      </body>
     </html >
   )
 }
