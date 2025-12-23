@@ -297,7 +297,7 @@ export const ChatModal = () => {
                             ) : messages.length === 0 ? (
                                 <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
                                     <MessageCircle className="h-12 w-12 mb-4" />
-                                    <p>Bắt đầu cuộc trò chuyện</p>
+                                    <p>Bạn có gặp vấn đề gì không ?</p>
                                 </div>
                             ) : (
                                 messages.map((message) => (
@@ -329,7 +329,7 @@ export const ChatModal = () => {
                                 </div>
                             )}
                         </div>
-                        <div className="border-t p-4">
+                        <div className="p-4">
                             <div className="flex gap-2">
                                 <Input
                                     value={messageInput}

@@ -7,7 +7,7 @@ export const getSessions = query({
         const identity = await ctx.auth.getUserIdentity();
 
         if (!identity) {
-            throw new Error("Not authenticated");
+            throw new Error("Chưa được xác thực");
         }
 
         const userId = identity.subject;
@@ -84,7 +84,7 @@ export const createSession = mutation({
         const identity = await ctx.auth.getUserIdentity();
 
         if (!identity) {
-            throw new Error("Not authenticated");
+            throw new Error("Chưa được xác thực");
         }
 
         const userId = identity.subject;
@@ -113,7 +113,7 @@ export const updateSession = mutation({
         const identity = await ctx.auth.getUserIdentity();
 
         if (!identity) {
-            throw new Error("Not authenticated");
+            throw new Error("Chưa được xác thực");
         }
 
         const userId = identity.subject;
@@ -121,7 +121,7 @@ export const updateSession = mutation({
         const session = await ctx.db.get(args.sessionId);
 
         if (!session) {
-            throw new Error("Session not found");
+            throw new Error("Không tìm thấy phiên làm việc");
         }
 
         if (session.userId !== userId) {
@@ -144,7 +144,7 @@ export const deleteSession = mutation({
         const identity = await ctx.auth.getUserIdentity();
 
         if (!identity) {
-            throw new Error("Not authenticated");
+            throw new Error("Chưa được xác thực");
         }
 
         const userId = identity.subject;
@@ -152,7 +152,7 @@ export const deleteSession = mutation({
         const session = await ctx.db.get(args.sessionId);
 
         if (!session) {
-            throw new Error("Session not found");
+            throw new Error("Không tìm thấy phiên làm việc");
         }
 
         if (session.userId !== userId) {
@@ -184,12 +184,11 @@ export const addMessage = mutation({
         const identity = await ctx.auth.getUserIdentity();
 
         if (!identity) {
-            throw new Error("Not authenticated");
+            throw new Error("Chưa được xác thực");
         }
 
         const userId = identity.subject;
 
-        // Verify session belongs to user
         const session = await ctx.db.get(args.sessionId);
         if (!session || session.userId !== userId) {
             throw new Error("Unauthorized");
@@ -202,7 +201,6 @@ export const addMessage = mutation({
             createdAt: Date.now(),
         });
 
-        // Update session's updatedAt
         await ctx.db.patch(args.sessionId, {
             updatedAt: Date.now(),
         });
@@ -210,8 +208,6 @@ export const addMessage = mutation({
         return messageId;
     }
 });
-
-// ACTIONS
 
 export const sendMessage = action({
     args: {
@@ -222,7 +218,7 @@ export const sendMessage = action({
         const identity = await ctx.auth.getUserIdentity();
 
         if (!identity) {
-            throw new Error("Not authenticated");
+            throw new Error("Chưa được xác thực");
         }
 
         await ctx.runMutation(api.chat.addMessage, {
@@ -236,7 +232,7 @@ export const sendMessage = action({
         });
 
         if (!session) {
-            throw new Error("Session not found");
+            throw new Error("Không tìm thấy phiên làm việc");
         }
 
         const messages = await ctx.runQuery(api.chat.getMessages, {
@@ -264,10 +260,13 @@ export const sendMessage = action({
                 },
             });
 
-            let prompt = args.message;
+            let promptInstruction = "Bạn đang đóng vai nhân viên hỗ trợ khách hàng của ứng dụng ghi chú trực tuyến MiNote.Hãy luôn trả lời bằng tiếng Việt (trừ khi người dùng yêu cầu ngôn ngữ khác).Giữ giọng điệu thân thiện, gần gũi, dễ hiểu, giống như đang hỗ trợ người dùng thực tế trong ứng dụng.";
+
             if (session.systemPrompt) {
-                prompt = `${session.systemPrompt}\n\nUser: ${args.message}`;
+                promptInstruction = session.systemPrompt + "\n\n" + promptInstruction;
             }
+
+            let prompt = `${promptInstruction}\n\nUser: ${args.message}`;
 
             const result = await chat.sendMessage(prompt);
             const response = result.response;
@@ -279,32 +278,30 @@ export const sendMessage = action({
                 content: aiMessage,
             });
 
-            // Auto-generate title from first message if session has no title
             if (!session.title || session.title === "Đoạn chat mới") {
                 try {
-                    // Ask AI to generate a short title
+                    // Hãy yêu cầu AI tạo ra một tiêu đề ngắn.
                     const titlePrompt = `Tạo một tiêu đề ngắn gọn (tối đa 6 từ) bằng tiếng Việt cho cuộc trò chuyện này dựa trên câu hỏi: "${args.message}". Chỉ trả về tiêu đề, không giải thích.`;
 
                     const titleResult = await model.generateContent(titlePrompt);
                     const titleResponse = titleResult.response;
                     let generatedTitle = titleResponse.text().trim();
 
-                    // Remove quotes if present
                     generatedTitle = generatedTitle.replace(/^["']|["']$/g, '');
 
-                    // Limit to 50 characters
+                    // Giới hạn 50 ký tự
                     if (generatedTitle.length > 50) {
                         generatedTitle = generatedTitle.slice(0, 47) + "...";
                     }
 
-                    // Update session title
                     await ctx.runMutation(api.chat.updateSession, {
                         sessionId: args.sessionId,
                         title: generatedTitle,
                     });
                 } catch (titleError) {
-                    console.error("Error generating title:", titleError);
-                    // Fallback: use first 50 chars of message
+                    console.error("Lỗi khi đang tạo Tiêu đề:", titleError);
+
+                    // Sử dụng 50 tin nhắn đầu tiên của tin nhắn
                     const fallbackTitle = args.message.slice(0, 47) + "...";
                     await ctx.runMutation(api.chat.updateSession, {
                         sessionId: args.sessionId,

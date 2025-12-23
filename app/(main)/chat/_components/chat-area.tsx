@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/popover";
 import { Label } from "@/components/ui/label";
 import { useUser } from "@clerk/clerk-react";
+import { useTheme } from "next-themes";
 
 interface ChatAreaProps {
     activeSessionId: Id<"chatSessions"> | null;
@@ -29,6 +30,7 @@ export function ChatArea({
     isSidebarOpen,
 }: ChatAreaProps) {
     const { user } = useUser();
+    const { theme, resolvedTheme } = useTheme();
     const [messageInput, setMessageInput] = useState("");
     const [isSending, setIsSending] = useState(false);
     const [settingsOpen, setSettingsOpen] = useState(false);
@@ -103,9 +105,13 @@ export function ChatArea({
     if (!activeSessionId) {
         return (
             <div className="flex-1 flex flex-col items-center justify-center bg-background text-muted-foreground">
-                <MessageCircle className="h-16 w-16 mb-4" />
+                <img
+                    src={(resolvedTheme || theme) === "dark" ? "/welcome-chat-dark.png" : "/welcome-chat.png"}
+                    alt="Empty chat"
+                    className="w-28 h-28 object-contain"
+                />
                 <h2 className="text-2xl font-semibold mb-2">Chào mừng đến với MiNote Chat</h2>
-                <p className="text-sm">Chọn một cuộc trò chuyện hoặc tạo đoạn chat mới để bắt đầu</p>
+                <p className="text-sm">"Chọn" hoặc "Tạo" đoạn chat mới để bắt đầu</p>
             </div>
         );
     }
@@ -113,7 +119,7 @@ export function ChatArea({
     return (
         <div className="flex-1 flex flex-col bg-background">
             {/* Header */}
-            <div className="h-14 border-b flex items-center justify-between px-4">
+            <div className="h-14 flex items-center justify-between px-4">
                 <div className="flex items-center gap-2">
                     {!isSidebarOpen && (
                         <Button
@@ -125,9 +131,9 @@ export function ChatArea({
                             <Menu className="h-5 w-5" />
                         </Button>
                     )}
-                    <h1 className="font-semibold truncate">
+                    {/* <h1 className="font-semibold truncate">
                         {activeSession?.title || "Chat"}
-                    </h1>
+                    </h1> */}
                 </div>
 
                 <Popover open={settingsOpen} onOpenChange={setSettingsOpen}>
@@ -169,15 +175,19 @@ export function ChatArea({
             </div>
 
             {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto px-4 py-6">
+            <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6 scrollbar-hide">
                 {messages === undefined ? (
                     <div className="flex items-center justify-center h-full">
                         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                     </div>
                 ) : messages.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
-                        <MessageCircle className="h-12 w-12 mb-4" />
-                        <p>Bắt đầu cuộc trò chuyện</p>
+                        <img
+                            src={(resolvedTheme || theme) === "dark" ? "/empty-chat-dark.png" : "/empty-chat.png"}
+                            alt="Empty chat"
+                            className="w-28 h-28 object-contain"
+                        />
+                        <p>Bạn có gặp vấn đề gì không ?</p>
                     </div>
                 ) : (
                     <div className="max-w-3xl mx-auto space-y-6">
@@ -185,29 +195,27 @@ export function ChatArea({
                             <div
                                 key={message._id}
                                 className={cn(
-                                    "flex gap-4",
-                                    message.role === "user" ? "justify-end" : "justify-start"
+                                    "flex flex-col gap-2",
+                                    message.role === "user" ? "items-end" : "items-start"
                                 )}
                             >
-                                {message.role === "assistant" && (
-                                    <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
-                                        <MessageCircle className="h-4 w-4 text-primary-foreground" />
+                                {/* Avatar and Name */}
+                                {message.role === "assistant" ? (
+                                    <div className="flex items-center gap-2">
+                                        <img
+                                            src="/nhan-vien.png"
+                                            alt="MiNote Bot"
+                                            className="w-8 h-8 rounded-full"
+                                        />
+                                        <p className="text-xs text-muted-foreground">
+                                            Bot AI
+                                        </p>
                                     </div>
-                                )}
-                                <div
-                                    className={cn(
-                                        "max-w-[80%] rounded-2xl px-4 py-3",
-                                        message.role === "user"
-                                            ? "bg-primary text-primary-foreground"
-                                            : "bg-muted"
-                                    )}
-                                >
-                                    <p className="whitespace-pre-wrap text-sm leading-relaxed">
-                                        {message.content}
-                                    </p>
-                                </div>
-                                {message.role === "user" && (
-                                    <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center flex-shrink-0">
+                                ) : (
+                                    <div className="flex items-center gap-2">
+                                        <p className="text-xs text-muted-foreground">
+                                            {user?.username}
+                                        </p>
                                         <img
                                             src={user?.imageUrl}
                                             alt="Avatar"
@@ -215,12 +223,31 @@ export function ChatArea({
                                         />
                                     </div>
                                 )}
+
+                                {/* Message Bubble */}
+                                <div
+                                    className={cn(
+                                        "max-w-[70%] rounded-xl px-3 py-2 h-fit",
+                                        message.role === "user"
+                                            ? "bg-primary text-primary-foreground"
+                                            : "bg-muted"
+                                    )}
+                                >
+                                    <p className="whitespace-pre-wrap text-xs leading-relaxed">
+                                        {message.content}
+                                    </p>
+                                </div>
                             </div>
                         ))}
                         {isSending && (
                             <div className="flex gap-4">
                                 <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
-                                    <MessageCircle className="h-4 w-4 text-primary-foreground" />
+                                    {/* <MessageCircle className="h-4 w-4 text-primary-foreground" /> */}
+                                    <img
+                                        src="/nhan-vien.png"
+                                        alt="MiNote Bot"
+                                        className="w-8 h-8 rounded-full"
+                                    />
                                 </div>
                                 <div className="bg-muted rounded-2xl px-4 py-3">
                                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -233,7 +260,7 @@ export function ChatArea({
             </div>
 
             {/* Input Area */}
-            <div className="border-t p-4">
+            <div className="p-4">
                 <div className="max-w-3xl mx-auto flex gap-2">
                     <Input
                         value={messageInput}
