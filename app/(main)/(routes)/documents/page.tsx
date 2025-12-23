@@ -16,7 +16,7 @@ const DocumentsPage = () => {
   const { user } = useUser();
   const create = useMutation(api.documents.create);
 
-  // Prefetch chat data in background to speed up navigation
+  // Tải trước dữ liệu trò chuyện trong nền để tăng tốc độ điều hướng.
   usePrefetchChat();
 
   const onCreate = () => {
