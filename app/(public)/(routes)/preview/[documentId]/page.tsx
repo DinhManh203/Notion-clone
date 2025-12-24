@@ -28,13 +28,13 @@ const DocumentIdPage = ({
 
     const update = useMutation(api.documents.update);
 
-    const isEditable = document ? !!document.allowEditing : false;
+    const isEditable = document ? (document.isPublished && !!document.allowEditing) : false;
 
     const onChange = (content: string) => {
         if (!isEditable) {
             return;
         }
-        
+
         update({
             id: params.documentId,
             content
@@ -59,6 +59,18 @@ const DocumentIdPage = ({
 
     if (document === null) {
         return <div>Not found</div>
+    }
+
+    if (!document.isPublished) {
+        return (
+            <div className="h-full flex flex-col items-center justify-center space-y-4">
+                <Lock className="h-12 w-12 text-muted-foreground" />
+                <h2 className="text-xl font-semibold">Document không được chia sẻ</h2>
+                <p className="text-sm text-muted-foreground">
+                    Document này đã bị hủy xuất bản và không còn khả dụng công khai.
+                </p>
+            </div>
+        );
     }
 
     return (

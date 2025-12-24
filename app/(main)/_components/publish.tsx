@@ -57,6 +57,7 @@ export const Publish = ({
         const promise = update({
             id: initialData._id,
             isPublished: false,
+            allowEditing: false,
         }).finally(() => setIsSubmitting(false));
 
         toast.promise(promise, {
@@ -268,7 +269,7 @@ export const Publish = ({
                 </Button>
             </PopoverTrigger>
             <PopoverContent
-                className="w-[20vw]"
+                className="w-[90vw] sm:w-auto sm:min-w-[400px] sm:max-w-[500px]"
                 align="end"
                 alignOffset={8}
                 forceMount

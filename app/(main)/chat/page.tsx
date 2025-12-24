@@ -1,16 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { useRouter } from "next/navigation";
+import { useMediaQuery } from "usehooks-ts";
 import { ChatSidebar } from "./_components/chat-sidebar";
 import { ChatArea } from "./_components/chat-area";
 import { usePrefetchDocuments } from "@/hooks/use-prefetch";
 
 export default function ChatPage() {
     const router = useRouter();
+    const isMobile = useMediaQuery("(max-width: 768px)");
     const [activeSessionId, setActiveSessionId] = useState<Id<"chatSessions"> | null>(null);
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
@@ -18,6 +20,23 @@ export default function ChatPage() {
 
     // Tải trước dữ liệu tài liệu trong nền để tăng tốc độ điều hướng.
     usePrefetchDocuments();
+
+    // Tự động mở sidebar khi chuyển từ mobile sang desktop
+    useEffect(() => {
+        if (!isMobile) {
+            setIsSidebarOpen(true);
+        }
+    }, [isMobile]);
+
+    // Prefetch documents route để tăng tốc độ navigation
+    useEffect(() => {
+        // Prefetch route sau 1 giây để không ảnh hưởng đến initial load
+        const timer = setTimeout(() => {
+            router.prefetch('/documents');
+        }, 1000);
+
+        return () => clearTimeout(timer);
+    }, [router]);
 
     return (
         <div className="h-screen flex bg-background">

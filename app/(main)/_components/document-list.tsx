@@ -87,11 +87,16 @@ export const DocumentList = ({
 
         const reorderedDocs = arrayMove(documents, oldIndex, newIndex);
 
-        reorderedDocs.forEach((doc, index) => {
-            reorder({ id: doc._id as Id<"documents">, newOrder: index });
-        });
+        // Only update affected documents (between oldIndex and newIndex)
+        const minIndex = Math.min(oldIndex, newIndex);
+        const maxIndex = Math.max(oldIndex, newIndex);
 
-        toast.success("Đã cập nhật lại vị trí!");
+        for (let i = minIndex; i <= maxIndex; i++) {
+            reorder({
+                id: reorderedDocs[i]._id as Id<"documents">,
+                newOrder: i
+            });
+        }
     };
 
     if (documents === undefined) {

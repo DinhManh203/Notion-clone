@@ -52,15 +52,24 @@ export function ChatSidebar({
 
     return (
         <>
+            {/* Mobile Overlay */}
+            {isOpen && (
+                <div
+                    className="fixed inset-0 bg-black/50 z-40 md:hidden"
+                    onClick={onToggle}
+                />
+            )}
+
             {/* Sidebar */}
             <aside
                 className={cn(
                     "h-full border-r bg-background flex flex-col transition-all duration-300",
+                    "fixed md:relative z-50 md:z-auto",
                     isOpen ? "w-64" : "w-0 overflow-hidden"
                 )}
             >
                 {/* Header */}
-                <div className="p-4">
+                <div className="p-4 mt-10">
                     <Button
                         onClick={handleCreateSession}
                         variant="outline"
@@ -149,8 +158,8 @@ export function ChatSidebar({
             <button
                 onClick={onToggle}
                 className={cn(
-                    "fixed top-4 left-4 z-50 md:hidden p-2 rounded-lg border bg-background shadow",
-                    isOpen && "left-60"
+                    "fixed top-16 z-[25] md:hidden p-3 ml-[-20px] rounded-lg border bg-background shadow transition-all duration-300",
+                    isOpen ? "left-[calc(256px+0.5rem)]" : "left-4"
                 )}
             >
                 <ChevronLeft

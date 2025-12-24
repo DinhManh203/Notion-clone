@@ -166,11 +166,15 @@ export const PinnedBox = () => {
 
         const reorderedDocs = arrayMove(filteredDocuments, oldIndex, newIndex);
 
-        reorderedDocs.forEach((doc, index) => {
-            reorder({ id: doc._id as Id<"documents">, newOrder: index });
-        });
+        const minIndex = Math.min(oldIndex, newIndex);
+        const maxIndex = Math.max(oldIndex, newIndex);
 
-        toast.success("Đã cập nhật lại vị trí!");
+        for (let i = minIndex; i <= maxIndex; i++) {
+            reorder({
+                id: reorderedDocs[i]._id as Id<"documents">,
+                newOrder: i
+            });
+        }
     };
 
     if (documents === undefined) {
