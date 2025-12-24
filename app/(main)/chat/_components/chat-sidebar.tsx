@@ -63,13 +63,16 @@ export function ChatSidebar({
             {/* Sidebar */}
             <aside
                 className={cn(
-                    "h-full border-r bg-background flex flex-col transition-all duration-300",
+                    "h-full border-r bg-background flex flex-col transition-all duration-300 relative",
                     "fixed md:relative z-50 md:z-auto",
-                    isOpen ? "w-64" : "w-0 overflow-hidden"
+                    // On mobile: toggle between w-64 and w-0
+                    // On desktop (md+): always w-64
+                    "md:w-64",
+                    isOpen ? "w-64" : "w-0 overflow-hidden md:overflow-visible"
                 )}
             >
                 {/* Header */}
-                <div className="p-4 mt-10">
+                <div className="p-4 mt-11">
                     <Button
                         onClick={handleCreateSession}
                         variant="outline"
@@ -154,17 +157,19 @@ export function ChatSidebar({
                 </div>
             </aside>
 
-            {/* Mobile toggle */}
+            {/* Toggle button - mobile only */}
             <button
                 onClick={onToggle}
                 className={cn(
-                    "fixed top-16 z-[25] md:hidden p-3 ml-[-20px] rounded-lg border bg-background shadow transition-all duration-300",
-                    isOpen ? "left-[calc(256px+0.5rem)]" : "left-4"
+                    "fixed top-16 z-[25] p-[8px] rounded-lg border bg-background shadow-md hover:shadow-lg hover:bg-accent transition-all duration-300",
+                    "md:hidden", // Only show on mobile
+                    isOpen ? "left-[calc(256px-2rem)]" : "left-4"
                 )}
+                aria-label={isOpen ? "Đóng sidebar" : "Mở sidebar"}
             >
                 <ChevronLeft
                     className={cn(
-                        "h-5 w-5 transition-transform",
+                        "h-5 w-5 transition-transform duration-300",
                         !isOpen && "rotate-180"
                     )}
                 />
