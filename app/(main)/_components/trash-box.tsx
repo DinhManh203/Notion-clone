@@ -8,9 +8,10 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { toast } from "sonner";
 import { Spinner } from "@/components/spinner";
-import { Search, Trash, Undo } from "lucide-react";
+import { Search, Trash, Undo, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ConfirmModal } from "@/components/modals/confirm-modal";
+import { Button } from "@/components/ui/button";
 
 export const TrashBox = () => {
     const router = useRouter();
@@ -18,6 +19,7 @@ export const TrashBox = () => {
     const documents = useQuery(api.documents.getTrash);
     const restore = useMutation(api.documents.restore);
     const remove = useMutation(api.documents.remove);
+    const removeAll = useMutation(api.documents.removeAll);
 
     const [search, setSearch] = useState("");
 
@@ -59,6 +61,20 @@ export const TrashBox = () => {
         }
     };
 
+    const onRemoveAll = () => {
+        const promise = removeAll();
+
+        toast.promise(promise, {
+            loading: "Đang xóa tất cả ghi chú...",
+            success: (result) => `Đã xóa ${result.count} ghi chú!`,
+            error: "Lỗi khi xóa tất cả."
+        });
+
+        if (params.documentId) {
+            router.push("/documents");
+        }
+    };
+
     if (documents === undefined) {
         return (
             <div className="h-full flex items-center justify-center p-4">
@@ -78,6 +94,22 @@ export const TrashBox = () => {
                     placeholder="Lọc theo tiêu đề trang..."
                 />
             </div>
+
+            {documents.length > 0 && (
+                <div className="px-2 pb-2">
+                    <ConfirmModal onConfirm={onRemoveAll}>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="w-full justify-start text-xs text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                        >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Xóa tất cả ({documents.length} ghi chú)
+                        </Button>
+                    </ConfirmModal>
+                </div>
+            )}
+
             <div className="mt-2 px-1 pb-1">
                 <p className="hidden last:block text-xs text-center text-muted-foreground pb-2">
                     Không tìm thấy thư mục.

@@ -126,10 +126,20 @@ export const Navigation = () => {
         if (sidebarRef.current && navbarRef.current) {
             setIsCollapsed(false);
             setIsResetting(true);
+
+            // Reset width first
             sidebarRef.current.style.width = isMobile ? "100%" : "250px";
             navbarRef.current.style.setProperty("width", isMobile ? '0' : 'calc(100% - 250px)');
             navbarRef.current.style.setProperty("left", isMobile ? "100%" : "250px");
-            setTimeout(() => setIsResetting(false), 300);
+
+            // Fade in content slightly after width animation starts
+            requestAnimationFrame(() => {
+                if (sidebarRef.current) {
+                    sidebarRef.current.style.opacity = "1";
+                }
+            });
+
+            setTimeout(() => setIsResetting(false), 450);
         }
     };
 
@@ -137,10 +147,20 @@ export const Navigation = () => {
         if (sidebarRef.current && navbarRef.current) {
             setIsCollapsed(true);
             setIsResetting(true);
-            sidebarRef.current.style.width = "0";
-            navbarRef.current.style.setProperty("width", "100%");
-            navbarRef.current.style.setProperty("left", "0");
-            setTimeout(() => setIsResetting(false), 300);
+
+            // Fade out content immediately
+            sidebarRef.current.style.opacity = "0";
+
+            // Collapse width after fade completes
+            setTimeout(() => {
+                if (sidebarRef.current && navbarRef.current) {
+                    sidebarRef.current.style.width = "0";
+                    navbarRef.current.style.setProperty("width", "100%");
+                    navbarRef.current.style.setProperty("left", "0");
+                }
+            }, 200);
+
+            setTimeout(() => setIsResetting(false), 450);
         }
     };
 
@@ -160,19 +180,25 @@ export const Navigation = () => {
                 ref={sidebarRef}
                 className={cn(
                     "group/sidebar h-full bg-secondary overflow-y-auto relative flex w-60 flex-col z-30",
-                    isResetting && "transition-all ease-in-out duration-300",
                     isMobile && "w-0"
                 )}
+                style={{
+                    transition: isResetting
+                        ? 'width 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                        : undefined,
+                    willChange: isResetting ? 'width, opacity' : undefined,
+                }}
             >
                 <div
                     onClick={collapse}
                     role='button'
                     className={cn(
-                        "h-6 w-6 text-muted-foreground rounded-sm hover:bg-neutral-300 dark:hover:bg-neutral-600 absolute top-3 right-2 transition",
-                        isMobile && "opacity-100"
+                        "h-6 w-6 text-muted-foreground rounded-sm hover:bg-neutral-300 dark:hover:bg-neutral-600 absolute top-3 right-2 transition-all duration-200 hover:scale-110 active:scale-95 hover:rotate-[-5deg]",
+                        isMobile && "opacity-100",
+                        !isCollapsed && "opacity-0 group-hover/sidebar:opacity-100"
                     )}
                 >
-                    <ChevronsLeft className="h-6 w-6" />
+                    <ChevronsLeft className="h-6 w-6 transition-all duration-200" />
                 </div>
 
                 <div>
@@ -180,7 +206,12 @@ export const Navigation = () => {
                     <Item label="Tìm kiếm" icon={Search} isSearch onClick={search.onOpen} />
                     <Item label="Cài đặt" icon={Settings} onClick={settings.onOpen} />
                     <Item onClick={handleCreate} label="Tạo ghi chú mới" icon={PlusCircle} />
-                    <Item onClick={() => router.push('/chat')} label="Chat" icon={MessageCircle} />
+                    <Item
+                        onClick={() => router.push('/chat')}
+                        label="Chat"
+                        icon={MessageCircle}
+                        onMouseEnter={() => router.prefetch('/chat')}
+                    />
                     <Popover open={openPinnedBox} onOpenChange={setOpenPinnedBox}>
                         <PopoverTrigger className="w-full mt-4">
                             <Item label="Tài liệu đã ghim" icon={Pin} />

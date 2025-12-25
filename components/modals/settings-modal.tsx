@@ -3,7 +3,8 @@
 import {
     Dialog,
     DialogContent,
-    DialogHeader
+    DialogHeader,
+    DialogTitle
 } from "@/components/ui/dialog";
 import {
     Popover,
@@ -337,7 +338,7 @@ export const SettingsModal = () => {
             <Dialog open={settings.isOpen} onOpenChange={settings.onClose}>
                 <DialogContent>
                     <DialogHeader className="border-b pb-3">
-                        <h2 className="text-lg font-medium">Tùy chỉnh giao diện</h2>
+                        <DialogTitle>Tùy chỉnh giao diện</DialogTitle>
                     </DialogHeader>
 
                     <div className="flex items-center justify-between">

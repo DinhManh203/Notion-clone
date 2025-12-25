@@ -243,7 +243,27 @@ export const sendMessage = action({
             sessionId: args.sessionId,
         });
 
-        const conversationHistory = messages.map((msg) => ({
+        // Base system prompt - dễ dàng tùy chỉnh
+        let systemInstruction = `
+Bạn đang đóng vai nhân viên hỗ trợ khách hàng của ứng dụng ghi chú trực tuyến MiNote.
+
+Hướng dẫn:
+- Luôn trả lời bằng tiếng Việt, trừ khi người dùng yêu cầu ngôn ngữ khác
+- Xưng hô với người dùng 'mình - bạn'
+- Trả lời thân thiện, nhiệt tình và chuyên nghiệp
+- Ghi nhớ toàn bộ ngữ cảnh cuộc trò chuyện trước đó
+- Tham chiếu đến các tin nhắn trước nếu liên quan
+`.trim();
+
+        if (session.systemPrompt) {
+            systemInstruction = session.systemPrompt + "\n\n" + systemInstruction;
+        }
+
+        // Build conversation history with proper format
+        // Limit to last 20 messages to avoid token limits
+        const recentMessages = messages.slice(-20);
+
+        const conversationHistory = recentMessages.map((msg) => ({
             role: msg.role === "assistant" ? "model" : "user",
             parts: [{ text: msg.content }],
         }));
@@ -254,8 +274,10 @@ export const sendMessage = action({
 
             const model = genAI.getGenerativeModel({
                 model: "gemini-2.5-flash-lite",
+                systemInstruction: systemInstruction,
             });
 
+            // Start chat with history (excluding the last user message which we'll send separately)
             const chat = model.startChat({
                 history: conversationHistory.slice(0, -1),
                 generationConfig: {
@@ -264,21 +286,9 @@ export const sendMessage = action({
                 },
             });
 
-            // Base system prompt - dễ dàng tùy chỉnh
-            let promptInstruction = `
-Bạn đang đóng vai nhân viên hỗ trợ khách hàng của ứng dụng ghi chú trực tuyến MiNote.
-
-Hướng dẫn:
-- Luôn trả lời bằng tiếng Việt, trừ khi người dùng yêu cầu ngôn ngữ khác
-- Xưng hô với người dùng 'mình - bạn'
-- Trả lời thân thiện, nhiệt tình và chuyên nghiệp
-`.trim();
-            if (session.systemPrompt) {
-                promptInstruction = session.systemPrompt + "\n\n" + promptInstruction;
-            }
-
+            // Build context-aware prompt
+            let contextPrompt = "";
             // Truy xuất nội dung tài liệu nếu tài liệu được gắn thẻ.
-            let documentContext = "";
             if (args.documentIds && args.documentIds.length > 0) {
                 console.log("Fetching content for", args.documentIds.length, "documents");
 
@@ -294,31 +304,29 @@ Hướng dẫn:
                                 ? document.content.substring(0, 3000) + "..."
                                 : document.content;
 
-                            documentContext += `\n\n=== TÀI LIỆU: ${document.title} ===\n${content}\n=== KẾT THÚC TÀI LIỆU ===\n`;
+                            contextPrompt += `\n\n=== TÀI LIỆU: ${document.title} ===\n${content}\n=== KẾT THÚC TÀI LIỆU ===\n`;
                         }
                     } catch (error) {
                         console.error("Error fetching document:", docId, error);
                     }
                 }
 
-                if (documentContext) {
-                    console.log("Document context added:", documentContext.length, "chars");
+                if (contextPrompt) {
+                    console.log("Document context added:", contextPrompt.length, "chars");
 
                     const documentInstruction = `
+=== HƯỚNG DẪN XỬ LÝ TÀI LIỆU ===
+Các tài liệu sau đây đã được người dùng gắn thẻ trong cuộc trò chuyện:
+${contextPrompt}
 
-                        === HƯỚNG DẪN XỬ LÝ TÀI LIỆU ===
-                        Các tài liệu sau đây đã được người dùng gắn thẻ trong cuộc trò chuyện:
-                        ${documentContext}
+Nhiệm vụ của bạn:
+- Phân tích kỹ các tài liệu trên
+- Sử dụng thông tin từ tài liệu để trả lời câu hỏi
+- Nếu câu hỏi liên quan đến nội dung tài liệu, hãy trích dẫn và giải thích cụ thể
+- Trả lời chính xác dựa trên nội dung tài liệu, không bịa đặt thông tin
+`.trim();
 
-                        Nhiệm vụ của bạn:
-                        - Phân tích kỹ các tài liệu trên
-                        - Sử dụng thông tin từ tài liệu để trả lời câu hỏi
-                        - Nếu câu hỏi liên quan đến nội dung tài liệu, hãy trích dẫn và giải thích cụ thể
-                        - Trả lời chính xác dựa trên nội dung tài liệu, không bịa đặt thông tin
-                        
-                        `.trim();
-
-                    promptInstruction = promptInstruction + "\n\n" + documentInstruction;
+                    contextPrompt = documentInstruction;
                 }
             }
 
@@ -341,31 +349,29 @@ Hướng dẫn:
                 console.error("Error loading sheet data:", error);
             }
 
-            // Thêm dữ liệu trang tính vào lời nhắc nếu có.
+            // Thêm dữ liệu trang tính vào context nếu có.
             if (sheetData) {
-                console.log("Thêm dữ liệu trang tính vào prompt");
+                console.log("Thêm dữ liệu trang tính vào context");
 
                 const sheetInstruction = `
 
 === DỮ LIỆU THAM KHẢO TỪ GOOGLE SHEETS ===
 ${sheetData}
-
-Hướng dẫn sử dụng dữ liệu:
-- Sử dụng dữ liệu sẵn có làm nguồn tham khảo để phản hồi tin nhắn cho người dùng
-- Trả lời bằng ngôn ngữ tự nhiên, sáng tạo và thân thiện
-- Hạn chế chào người dùng khi đang hỏi
-- Nội dung cần đúng trọng tâm, rõ ràng, đúng bối cảnh
-- Vừa đủ độ dài, tránh trả lời lan man hoặc thô cứng
+=== KẾT THÚC DỮ LIỆU ===
 `.trim();
 
-                promptInstruction = promptInstruction + "\n\n" + sheetInstruction;
+                contextPrompt = contextPrompt + "\n\n" + sheetInstruction;
             } else {
                 console.log("Không có sẵn dữ liệu trang tính");
             }
 
-            let prompt = `${promptInstruction}\n\nUser: ${args.message}`;
+            // Build final prompt with context
+            let finalPrompt = args.message;
+            if (contextPrompt) {
+                finalPrompt = `${contextPrompt}\n\n${args.message}`;
+            }
 
-            const result = await chat.sendMessage(prompt);
+            const result = await chat.sendMessage(finalPrompt);
             const response = result.response;
             const aiMessage = response.text();
 

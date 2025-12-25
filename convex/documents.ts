@@ -269,6 +269,34 @@ export const remove = mutation({
     }
 });
 
+export const removeAll = mutation({
+    handler: async (ctx) => {
+        const identity = await ctx.auth.getUserIdentity();
+
+        if (!identity) {
+            throw new Error("Not authenticated");
+        }
+
+        const userId = identity.subject;
+
+        // Get all archived documents for this user
+        const archivedDocuments = await ctx.db
+            .query("documents")
+            .withIndex("by_user", (q) => q.eq("userId", userId))
+            .filter((q) => q.eq(q.field("isArchived"), true))
+            .collect();
+
+        // Delete all archived documents
+        const deletePromises = archivedDocuments.map((doc) =>
+            ctx.db.delete(doc._id)
+        );
+
+        await Promise.all(deletePromises);
+
+        return { count: archivedDocuments.length };
+    }
+});
+
 export const getSearch = query({
     handler: async (ctx) => {
         const identity = await ctx.auth.getUserIdentity();

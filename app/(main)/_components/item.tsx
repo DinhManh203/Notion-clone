@@ -43,6 +43,7 @@ interface ItemProps {
     onClick?: () => void;
     icon: LucideIcon;
     isDraggable?: boolean;
+    onMouseEnter?: () => void;
 }
 
 const Item = ({
@@ -57,6 +58,7 @@ const Item = ({
     onExpand,
     expanded,
     isDraggable = false,
+    onMouseEnter,
 }: ItemProps) => {
     const { user } = useUser();
     const router = useRouter();
@@ -145,6 +147,8 @@ const Item = ({
         if (id) {
             router.prefetch(`/documents/${id}`);
         }
+        // Call external onMouseEnter if provided
+        onMouseEnter?.();
     };
 
     return (
