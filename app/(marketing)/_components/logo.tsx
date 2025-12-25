@@ -1,12 +1,6 @@
 import React from 'react';
 import Image from 'next/image';
-import { Poppins } from 'next/font/google';
 import { cn } from '@/lib/utils';
-
-const font = Poppins({
-    subsets: ["latin"],
-    weight: ["400", "600"]
-});
 
 export const Logo = () => {
     return (
@@ -17,7 +11,7 @@ export const Logo = () => {
                 width={40}
                 height={40}
             />
-            <p className={cn("font-semibold", font.className)}>
+            <p className="font-semibold">
                 MiNote
             </p>
         </div>

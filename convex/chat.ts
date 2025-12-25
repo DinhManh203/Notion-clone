@@ -264,7 +264,15 @@ export const sendMessage = action({
                 },
             });
 
-            let promptInstruction = "Bạn đang đóng vai nhân viên hỗ trợ khách hàng của ứng dụng ghi chú trực tuyến MiNote. Hãy luôn trả lời bằng tiếng Việt, trừ khi người dùng yêu cầu ngôn ngữ khác. Xưng hô với người dùng 'mình - bạn'";
+            // Base system prompt - dễ dàng tùy chỉnh
+            let promptInstruction = `
+Bạn đang đóng vai nhân viên hỗ trợ khách hàng của ứng dụng ghi chú trực tuyến MiNote.
+
+Hướng dẫn:
+- Luôn trả lời bằng tiếng Việt, trừ khi người dùng yêu cầu ngôn ngữ khác
+- Xưng hô với người dùng 'mình - bạn'
+- Trả lời thân thiện, nhiệt tình và chuyên nghiệp
+`.trim();
             if (session.systemPrompt) {
                 promptInstruction = session.systemPrompt + "\n\n" + promptInstruction;
             }
@@ -295,7 +303,22 @@ export const sendMessage = action({
 
                 if (documentContext) {
                     console.log("Document context added:", documentContext.length, "chars");
-                    promptInstruction = promptInstruction + "\n\n" + documentContext + "\n\nHãy phân tích các tài liệu trên và sử dụng thông tin từ đó để trả lời câu hỏi của người dùng. Nếu câu hỏi liên quan đến nội dung tài liệu, hãy trích dẫn và giải thích cụ thể.";
+
+                    const documentInstruction = `
+
+                        === HƯỚNG DẪN XỬ LÝ TÀI LIỆU ===
+                        Các tài liệu sau đây đã được người dùng gắn thẻ trong cuộc trò chuyện:
+                        ${documentContext}
+
+                        Nhiệm vụ của bạn:
+                        - Phân tích kỹ các tài liệu trên
+                        - Sử dụng thông tin từ tài liệu để trả lời câu hỏi
+                        - Nếu câu hỏi liên quan đến nội dung tài liệu, hãy trích dẫn và giải thích cụ thể
+                        - Trả lời chính xác dựa trên nội dung tài liệu, không bịa đặt thông tin
+                        
+                        `.trim();
+
+                    promptInstruction = promptInstruction + "\n\n" + documentInstruction;
                 }
             }
 
@@ -321,7 +344,21 @@ export const sendMessage = action({
             // Thêm dữ liệu trang tính vào lời nhắc nếu có.
             if (sheetData) {
                 console.log("Thêm dữ liệu trang tính vào prompt");
-                promptInstruction = promptInstruction + "\n\n" + sheetData + "\n\nSử dụng dữ liệu sẵn có làm nguồn tham khảo để phản hồi tin nhắn cho người dùng. Trả lời bằng ngôn ngữ tự nhiên, sáng tạo và thân thiện (Hạn chế chào người dùng khi đang hỏi). Nội dung cần đúng trọng tâm, rõ ràng, đúng bối cảnh, vừa đủ độ dài, tránh trả lời lan man hoặc thô cứng.";
+
+                const sheetInstruction = `
+
+=== DỮ LIỆU THAM KHẢO TỪ GOOGLE SHEETS ===
+${sheetData}
+
+Hướng dẫn sử dụng dữ liệu:
+- Sử dụng dữ liệu sẵn có làm nguồn tham khảo để phản hồi tin nhắn cho người dùng
+- Trả lời bằng ngôn ngữ tự nhiên, sáng tạo và thân thiện
+- Hạn chế chào người dùng khi đang hỏi
+- Nội dung cần đúng trọng tâm, rõ ràng, đúng bối cảnh
+- Vừa đủ độ dài, tránh trả lời lan man hoặc thô cứng
+`.trim();
+
+                promptInstruction = promptInstruction + "\n\n" + sheetInstruction;
             } else {
                 console.log("Không có sẵn dữ liệu trang tính");
             }
@@ -341,7 +378,15 @@ export const sendMessage = action({
             if (!session.title || session.title === "Đoạn chat mới") {
                 try {
                     // Hãy yêu cầu AI tạo ra một tiêu đề ngắn.
-                    const titlePrompt = `Tạo một tiêu đề ngắn gọn bằng tiếng Việt cho cuộc trò chuyện này dựa trên câu hỏi: "${args.message}". Chỉ trả về tiêu đề, không giải thích.`;
+                    const titlePrompt = `
+Tạo một tiêu đề ngắn gọn bằng tiếng Việt cho cuộc trò chuyện này dựa trên câu hỏi: 
+"${args.message}"
+
+Yêu cầu:
+- Chỉ trả về tiêu đề, không giải thích
+- Ngắn gọn, súc tích (tối đa 50-60 ký tự)
+- Phản ánh đúng nội dung câu hỏi
+`.trim();
 
                     const titleResult = await model.generateContent(titlePrompt);
                     const titleResponse = titleResult.response;

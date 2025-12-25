@@ -65,8 +65,6 @@ export function ChatSidebar({
                 className={cn(
                     "h-full border-r bg-background flex flex-col transition-all duration-300 relative",
                     "fixed md:relative z-50 md:z-auto",
-                    // On mobile: toggle between w-64 and w-0
-                    // On desktop (md+): always w-64
                     "md:w-64",
                     isOpen ? "w-64" : "w-0 overflow-hidden md:overflow-visible"
                 )}

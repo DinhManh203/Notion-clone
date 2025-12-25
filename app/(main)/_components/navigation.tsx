@@ -127,7 +127,7 @@ export const Navigation = () => {
             setIsCollapsed(false);
             setIsResetting(true);
             sidebarRef.current.style.width = isMobile ? "100%" : "250px";
-            navbarRef.current.style.setProperty("width", isMobile ? '0' : 'calc(100% - 1050px)');
+            navbarRef.current.style.setProperty("width", isMobile ? '0' : 'calc(100% - 250px)');
             navbarRef.current.style.setProperty("left", isMobile ? "100%" : "250px");
             setTimeout(() => setIsResetting(false), 300);
         }
@@ -258,7 +258,7 @@ export const Navigation = () => {
                                 onClick={resetWidth}
                                 className="
                                     flex items-center justify-center
-                                    h-10 w-10
+                                    h-8 w-8
                                     rounded-lg
                                     border
                                     bg-background
