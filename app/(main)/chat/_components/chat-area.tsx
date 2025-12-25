@@ -6,7 +6,7 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Send, Loader2, Menu, Settings, X, FileText } from "lucide-react";
+import { Send, Loader2, Menu, Settings, X, FileText, Copy, Check } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import {
@@ -38,6 +38,7 @@ export function ChatArea({
     const [taggedDocuments, setTaggedDocuments] = useState<Array<{ _id: Id<"documents">, title: string, icon?: string }>>([]);
     const [showDocumentPicker, setShowDocumentPicker] = useState(false);
     const [cursorPosition, setCursorPosition] = useState(0);
+    const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
@@ -53,6 +54,18 @@ export function ChatArea({
 
     const updateSession = useMutation(api.chat.updateSession);
     const sendMessage = useAction(api.chat.sendMessage);
+
+    // Handle copy message
+    const handleCopyMessage = async (content: string, messageId: string) => {
+        try {
+            await navigator.clipboard.writeText(content);
+            setCopiedMessageId(messageId);
+            toast.success("Đã sao chép tin nhắn!");
+            setTimeout(() => setCopiedMessageId(null), 2000);
+        } catch (error) {
+            toast.error("Lỗi khi sao chép!");
+        }
+    };
 
     // Tự động cuộn xuống cuối trang
     useEffect(() => {
@@ -275,36 +288,60 @@ export function ChatArea({
                                     </div>
                                 )}
 
-                                {/* Message Bubble */}
-                                <div
-                                    className={cn(
-                                        "max-w-[70%] rounded-xl px-3 py-2 h-fit",
-                                        message.role === "user"
-                                            ? "bg-primary text-primary-foreground"
-                                            : "bg-muted"
-                                    )}
-                                >
-                                    {/* Hiển thị các tài liệu được gắn thẻ cho tin nhắn người dùng */}
-                                    {message.role === "user" && message.documentIds && message.documentIds.length > 0 && (
-                                        <div className="flex flex-wrap gap-1 mb-2 pb-2 border-b border-primary-foreground/20">
-                                            {message.documentIds.map((docId) => {
-                                                const doc = userDocuments?.find(d => d._id === docId);
-                                                return doc ? (
-                                                    <div
-                                                        key={docId}
-                                                        className="inline-flex items-center gap-1 px-2 py-0.5 bg-primary-foreground/20 rounded text-xs"
-                                                    >
-                                                        <FileText className="h-6 w-4" />
-                                                        <span>{doc.icon} {doc.title}</span>
-                                                    </div>
-                                                ) : null;
-                                            })}
-                                        </div>
-                                    )}
 
-                                    <p className="whitespace-pre-wrap text-[14px] leading-relaxed">
-                                        {message.content}
-                                    </p>
+                                {/* Message Bubble */}
+                                <div className="flex flex-col gap-1 max-w-[70%]">
+                                    <div
+                                        className={cn(
+                                            "rounded-xl px-3 py-2 h-fit",
+                                            message.role === "user"
+                                                ? "bg-primary text-primary-foreground"
+                                                : "bg-muted"
+                                        )}
+                                    >
+                                        {/* Hiển thị các tài liệu được gắn thẻ cho tin nhắn người dùng */}
+                                        {message.role === "user" && message.documentIds && message.documentIds.length > 0 && (
+                                            <div className="flex flex-wrap gap-1 mb-2 pb-2 border-b border-primary-foreground/20">
+                                                {message.documentIds.map((docId) => {
+                                                    const doc = userDocuments?.find(d => d._id === docId);
+                                                    return doc ? (
+                                                        <div
+                                                            key={docId}
+                                                            className="inline-flex items-center gap-1 px-2 py-0.5 bg-primary-foreground/20 rounded text-xs"
+                                                        >
+                                                            <FileText className="h-6 w-4" />
+                                                            <span>{doc.icon} {doc.title}</span>
+                                                        </div>
+                                                    ) : null;
+                                                })}
+                                            </div>
+                                        )}
+
+                                        <p className="whitespace-pre-wrap text-[14px] leading-relaxed">
+                                            {message.content}
+                                        </p>
+                                    </div>
+
+                                    {/* Copy button below AI messages */}
+                                    {message.role === "assistant" && (
+                                        <button
+                                            onClick={() => handleCopyMessage(message.content, message._id)}
+                                            className="self-start flex items-center gap-1.5 px-2 py-1 rounded-md text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+                                            title="Sao chép tin nhắn"
+                                        >
+                                            {copiedMessageId === message._id ? (
+                                                <>
+                                                    <Check className="h-3 w-3 text-green-500" />
+                                                    <span className="text-green-500">Đã sao chép</span>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Copy className="h-3 w-3" />
+                                                    <span>Sao chép</span>
+                                                </>
+                                            )}
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                         ))}

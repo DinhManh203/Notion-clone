@@ -243,27 +243,7 @@ export const sendMessage = action({
             sessionId: args.sessionId,
         });
 
-        // Base system prompt - dễ dàng tùy chỉnh
-        let systemInstruction = `
-Bạn đang đóng vai nhân viên hỗ trợ khách hàng của ứng dụng ghi chú trực tuyến MiNote.
-
-Hướng dẫn:
-- Luôn trả lời bằng tiếng Việt, trừ khi người dùng yêu cầu ngôn ngữ khác
-- Xưng hô với người dùng 'mình - bạn'
-- Trả lời thân thiện, nhiệt tình và chuyên nghiệp
-- Ghi nhớ toàn bộ ngữ cảnh cuộc trò chuyện trước đó
-- Tham chiếu đến các tin nhắn trước nếu liên quan
-`.trim();
-
-        if (session.systemPrompt) {
-            systemInstruction = session.systemPrompt + "\n\n" + systemInstruction;
-        }
-
-        // Build conversation history with proper format
-        // Limit to last 20 messages to avoid token limits
-        const recentMessages = messages.slice(-20);
-
-        const conversationHistory = recentMessages.map((msg) => ({
+        const conversationHistory = messages.map((msg) => ({
             role: msg.role === "assistant" ? "model" : "user",
             parts: [{ text: msg.content }],
         }));
@@ -274,10 +254,8 @@ Hướng dẫn:
 
             const model = genAI.getGenerativeModel({
                 model: "gemini-2.5-flash-lite",
-                systemInstruction: systemInstruction,
             });
 
-            // Start chat with history (excluding the last user message which we'll send separately)
             const chat = model.startChat({
                 history: conversationHistory.slice(0, -1),
                 generationConfig: {
@@ -286,9 +264,65 @@ Hướng dẫn:
                 },
             });
 
-            // Build context-aware prompt
-            let contextPrompt = "";
+            // Base system prompt - chỉ tập trung vào văn học và hướng dẫn
+            let promptInstruction = `
+                    Bạn là trợ lý AI chuyên về VĂN HỌC của ứng dụng ghi chú MiNote.
+
+                    PHẠM VI CHUYÊN MÔN:
+                    1. VĂN HỌC VIỆT NAM:
+                    - Văn học cổ điển (thơ ca, văn xuôi, truyện Nôm...)
+                    - Văn học hiện đại và đương đại
+                    - Tác giả, tác phẩm, phong trào văn học
+                    - Phân tích tác phẩm, nhân vật, nghệ thuật
+                    - Lịch sử văn học, trường phái
+
+                    2. VĂN HỌC NƯỚC NGOÀI:
+                    - Văn học các nước (Âu, Mỹ, Á, Phi...)
+                    - Tác giả và tác phẩm nổi tiếng
+                    - Trường phái văn học thế giới
+                    - So sánh văn học các nền văn hóa
+                    - Dịch thuật và tiếp nhận văn học
+
+                    3. HƯỚNG DẪN SỬ DỤNG MINOTE:
+                    - Cách tạo, chỉnh sửa, quản lý ghi chú
+                    - Tính năng của ứng dụng
+                    - Mẹo và thủ thuật sử dụng hiệu quả
+                    - Giải đáp thắc mắc về ứng dụng
+                    - ...
+
+                    NGUYÊN TẮC TRẢ LỜI:
+                    ✅ CHẤP NHẬN:
+                    - Mọi câu hỏi về văn học Việt Nam và thế giới
+                    - Phân tích, giải thích tác phẩm văn học
+                    - Hướng dẫn sử dụng MiNote
+                    - Tư vấn cách ghi chú, tổ chức tài liệu văn học
+
+                    ❌ TỪ CHỐI LỊCH SỰ:
+                    - Toán học, vật lý, hóa học, sinh học
+                    - Lập trình, công nghệ (trừ hướng dẫn MiNote)
+                    - Kinh tế, chính trị, xã hội
+                    - Y học, sức khỏe, tâm lý
+                    - Các chủ đề không liên quan văn học
+
+                    KHI NHẬN CÂU HỎI NGOÀI PHẠM VI:
+                    "Xin lỗi bạn, mình chỉ chuyên về văn học Việt Nam, văn học nước ngoài và hướng dẫn sử dụng MiNote thôi. Bạn có câu hỏi nào về văn học hoặc cần hướng dẫn sử dụng ứng dụng không?"
+
+                    PHONG CÁCH:
+                    - Xưng hô: mình - bạn
+                    - Thân thiện, nhiệt tình, chuyên nghiệp
+                    - Trả lời bằng tiếng Việt (trừ khi yêu cầu khác)
+                    - Ghi nhớ toàn bộ ngữ cảnh cuộc trò chuyện
+                    - Tham chiếu tin nhắn trước nếu liên quan
+                    - Trích dẫn cụ thể khi phân tích văn học
+                    - Hạn chế chào hỏi lặp lại mỗi câu trả lời
+                    `.trim();
+
+            if (session.systemPrompt) {
+                promptInstruction = session.systemPrompt + "\n\n" + promptInstruction;
+            }
+
             // Truy xuất nội dung tài liệu nếu tài liệu được gắn thẻ.
+            let documentContext = "";
             if (args.documentIds && args.documentIds.length > 0) {
                 console.log("Fetching content for", args.documentIds.length, "documents");
 
@@ -304,29 +338,28 @@ Hướng dẫn:
                                 ? document.content.substring(0, 3000) + "..."
                                 : document.content;
 
-                            contextPrompt += `\n\n=== TÀI LIỆU: ${document.title} ===\n${content}\n=== KẾT THÚC TÀI LIỆU ===\n`;
+                            documentContext += `\n\n=== TÀI LIỆU: ${document.title} ===\n${content}\n=== KẾT THÚC TÀI LIỆU ===\n`;
                         }
                     } catch (error) {
                         console.error("Error fetching document:", docId, error);
                     }
                 }
 
-                if (contextPrompt) {
-                    console.log("Document context added:", contextPrompt.length, "chars");
+                if (documentContext) {
+                    console.log("Document context added:", documentContext.length, "chars");
 
                     const documentInstruction = `
-=== HƯỚNG DẪN XỬ LÝ TÀI LIỆU ===
-Các tài liệu sau đây đã được người dùng gắn thẻ trong cuộc trò chuyện:
-${contextPrompt}
 
-Nhiệm vụ của bạn:
-- Phân tích kỹ các tài liệu trên
-- Sử dụng thông tin từ tài liệu để trả lời câu hỏi
-- Nếu câu hỏi liên quan đến nội dung tài liệu, hãy trích dẫn và giải thích cụ thể
-- Trả lời chính xác dựa trên nội dung tài liệu, không bịa đặt thông tin
-`.trim();
+                        Các tài liệu sau đây đã được người dùng gắn thẻ trong cuộc trò chuyện:
+                        ${documentContext}
 
-                    contextPrompt = documentInstruction;
+                        Nhiệm vụ của bạn:
+                        - Phân tích kỹ các tài liệu trên
+                        - Sử dụng thông tin từ tài liệu để trả lời câu hỏi
+                        - Nếu câu hỏi liên quan đến nội dung tài liệu, hãy trích dẫn và giải thích cụ thể
+                        - Trả lời chính xác dựa trên nội dung tài liệu, không bịa đặt thông tin
+                        `.trim();
+                    promptInstruction = promptInstruction + "\n\n" + documentInstruction;
                 }
             }
 
@@ -349,29 +382,17 @@ Nhiệm vụ của bạn:
                 console.error("Error loading sheet data:", error);
             }
 
-            // Thêm dữ liệu trang tính vào context nếu có.
+            // Thêm dữ liệu trang tính vào lời nhắc nếu có.
             if (sheetData) {
-                console.log("Thêm dữ liệu trang tính vào context");
-
-                const sheetInstruction = `
-
-=== DỮ LIỆU THAM KHẢO TỪ GOOGLE SHEETS ===
-${sheetData}
-=== KẾT THÚC DỮ LIỆU ===
-`.trim();
-
-                contextPrompt = contextPrompt + "\n\n" + sheetInstruction;
+                console.log("Thêm dữ liệu trang tính vào prompt");
+                promptInstruction = promptInstruction + "\n\n" + sheetData + "\n\nSử dụng dữ liệu sẵn có làm nguồn tham khảo để phản hồi tin nhắn cho người dùng. Trả lời bằng ngôn ngữ tự nhiên, sáng tạo và thân thiện (Hạn chế chào người dùng khi đang hỏi). Nội dung cần đúng trọng tâm, rõ ràng, đúng bối cảnh, vừa đủ độ dài, tránh trả lời lan man hoặc thô cứng.";
             } else {
                 console.log("Không có sẵn dữ liệu trang tính");
             }
 
-            // Build final prompt with context
-            let finalPrompt = args.message;
-            if (contextPrompt) {
-                finalPrompt = `${contextPrompt}\n\n${args.message}`;
-            }
+            let prompt = `${promptInstruction}\n\nUser: ${args.message}`;
 
-            const result = await chat.sendMessage(finalPrompt);
+            const result = await chat.sendMessage(prompt);
             const response = result.response;
             const aiMessage = response.text();
 
@@ -384,15 +405,7 @@ ${sheetData}
             if (!session.title || session.title === "Đoạn chat mới") {
                 try {
                     // Hãy yêu cầu AI tạo ra một tiêu đề ngắn.
-                    const titlePrompt = `
-Tạo một tiêu đề ngắn gọn bằng tiếng Việt cho cuộc trò chuyện này dựa trên câu hỏi: 
-"${args.message}"
-
-Yêu cầu:
-- Chỉ trả về tiêu đề, không giải thích
-- Ngắn gọn, súc tích (tối đa 50-60 ký tự)
-- Phản ánh đúng nội dung câu hỏi
-`.trim();
+                    const titlePrompt = `Tạo một tiêu đề ngắn gọn bằng tiếng Việt cho cuộc trò chuyện này dựa trên câu hỏi: "${args.message}". Chỉ trả về tiêu đề, không giải thích.`;
 
                     const titleResult = await model.generateContent(titlePrompt);
                     const titleResponse = titleResult.response;
