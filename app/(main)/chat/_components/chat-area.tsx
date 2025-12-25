@@ -39,6 +39,7 @@ export function ChatArea({
     const [showDocumentPicker, setShowDocumentPicker] = useState(false);
     const [cursorPosition, setCursorPosition] = useState(0);
     const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
+    const [selectedDocIndex, setSelectedDocIndex] = useState(0);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
@@ -90,10 +91,14 @@ export function ChatArea({
         const textBeforeCursor = value.substring(0, cursorPos);
         const lastAtSymbol = textBeforeCursor.lastIndexOf('@');
 
-        if (lastAtSymbol !== -1 && lastAtSymbol === cursorPos - 1) {
+        if (lastAtSymbol !== -1) {
+            // Lấy text sau @ để tìm kiếm
+            const searchQuery = textBeforeCursor.substring(lastAtSymbol + 1);
             setShowDocumentPicker(true);
-        } else if (showDocumentPicker && !textBeforeCursor.endsWith('@')) {
+            setSelectedDocIndex(0); // Reset selection khi search query thay đổi
+        } else {
             setShowDocumentPicker(false);
+            setSelectedDocIndex(0);
         }
     };
 
@@ -144,6 +149,55 @@ export function ChatArea({
         }
     };
 
+    const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        // Nếu document picker đang mở, xử lý phím mũi tên
+        if (showDocumentPicker && userDocuments) {
+            const textBeforeCursor = messageInput.substring(0, cursorPosition);
+            const lastAtSymbol = textBeforeCursor.lastIndexOf('@');
+            const searchQuery = lastAtSymbol !== -1
+                ? textBeforeCursor.substring(lastAtSymbol + 1).toLowerCase()
+                : '';
+
+            const filteredDocs = userDocuments.filter(doc =>
+                doc.title.toLowerCase().includes(searchQuery)
+            );
+
+            if (filteredDocs.length > 0) {
+                if (e.key === "ArrowDown") {
+                    e.preventDefault();
+                    setSelectedDocIndex((prev) =>
+                        prev < filteredDocs.length - 1 ? prev + 1 : 0
+                    );
+                } else if (e.key === "ArrowUp") {
+                    e.preventDefault();
+                    setSelectedDocIndex((prev) =>
+                        prev > 0 ? prev - 1 : filteredDocs.length - 1
+                    );
+                } else if (e.key === "Enter") {
+                    e.preventDefault();
+                    const selectedDoc = filteredDocs[selectedDocIndex];
+                    if (selectedDoc) {
+                        handleSelectDocument({
+                            _id: selectedDoc._id,
+                            title: selectedDoc.title,
+                            icon: selectedDoc.icon
+                        });
+                    }
+                    return;
+                } else if (e.key === "Escape") {
+                    e.preventDefault();
+                    setShowDocumentPicker(false);
+                    return;
+                }
+            }
+        }
+
+        // Xử lý Enter để gửi tin nhắn
+        if (e.key === "Enter" && !isSending && messageInput.trim() && !showDocumentPicker) {
+            handleSendMessage();
+        }
+    };
+
     const handleSaveSettings = async () => {
         if (!activeSessionId) return;
 
@@ -156,13 +210,6 @@ export function ChatArea({
             toast.success("Đã lưu cài đặt");
         } catch (error) {
             toast.error("Lỗi khi lưu cài đặt");
-        }
-    };
-
-    const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
-            handleSendMessage();
         }
     };
 
@@ -289,7 +336,7 @@ export function ChatArea({
                                 )}
 
 
-                                {/* Message Bubble */}
+                                {/* Bong bóng chat */}
                                 <div className="flex flex-col gap-1 max-w-[70%]">
                                     <div
                                         className={cn(
@@ -322,7 +369,7 @@ export function ChatArea({
                                         </p>
                                     </div>
 
-                                    {/* Copy button below AI messages */}
+                                    {/* Nút sao chép phía dưới bong bóng chat AI */}
                                     {message.role === "assistant" && (
                                         <button
                                             onClick={() => handleCopyMessage(message.content, message._id)}
@@ -365,10 +412,10 @@ export function ChatArea({
                 )}
             </div>
 
-            {/* Input Area */}
+            {/* Vùng nhập */}
             <div className="p-4 mb-10">
                 <div className="max-w-3xl mx-auto">
-                    {/* Tagged Documents Chips */}
+                    {/* Tag tài liệu */}
                     {taggedDocuments.length > 0 && (
                         <div className="flex flex-wrap gap-2 mb-2">
                             {taggedDocuments.map(doc => (
@@ -390,33 +437,54 @@ export function ChatArea({
                     {/* Nhập liệu bằng Trình chọn tài liệu */}
                     <div className="relative flex gap-2 items-center">
                         {/* Menu Chọn tài liệu */}
-                        {showDocumentPicker && userDocuments && userDocuments.length > 0 && (
-                            <div className="absolute bottom-full mb-2 w-full max-h-60 overflow-y-auto bg-popover border rounded-md shadow-lg z-50">
-                                <div className="p-2 text-xs text-muted-foreground border-b">
-                                    Chọn tài liệu để phân tích
-                                </div>
-                                {userDocuments.map(doc => (
-                                    <div
-                                        key={doc._id}
-                                        onClick={() => handleSelectDocument({
-                                            _id: doc._id,
-                                            title: doc.title,
-                                            icon: doc.icon
-                                        })}
-                                        className="px-3 py-2 hover:bg-accent cursor-pointer flex items-center gap-2 text-sm"
-                                    >
-                                        <FileText className="h-4 w-4" />
-                                        <span>{doc.icon} {doc.title}</span>
+                        {showDocumentPicker && userDocuments && userDocuments.length > 0 && (() => {
+                            // Lấy search query sau @
+                            const textBeforeCursor = messageInput.substring(0, cursorPosition);
+                            const lastAtSymbol = textBeforeCursor.lastIndexOf('@');
+                            const searchQuery = lastAtSymbol !== -1
+                                ? textBeforeCursor.substring(lastAtSymbol + 1).toLowerCase()
+                                : '';
+
+                            // Lọc tài liệu theo search query
+                            const filteredDocs = userDocuments.filter(doc =>
+                                doc.title.toLowerCase().includes(searchQuery)
+                            );
+
+                            return filteredDocs.length > 0 ? (
+                                <div className="absolute bottom-full mb-2 w-full max-h-60 overflow-y-auto bg-popover border rounded-md shadow-lg z-50">
+                                    <div className="p-2 text-xs text-muted-foreground border-b">
+                                        {searchQuery ? `Tìm kiếm: "${searchQuery}"` : 'Chọn tài liệu để phân tích'}
                                     </div>
-                                ))}
-                            </div>
-                        )}
+                                    {filteredDocs.map((doc, index) => (
+                                        <div
+                                            key={doc._id}
+                                            onClick={() => handleSelectDocument({
+                                                _id: doc._id,
+                                                title: doc.title,
+                                                icon: doc.icon
+                                            })}
+                                            className={cn(
+                                                "px-3 py-2 hover:bg-accent cursor-pointer flex items-center gap-2 text-sm",
+                                                index === selectedDocIndex && "bg-accent"
+                                            )}
+                                        >
+                                            <FileText className="h-4 w-4" />
+                                            <span>{doc.icon} {doc.title}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : searchQuery ? (
+                                <div className="absolute bottom-full mb-2 w-full bg-popover border rounded-md shadow-lg z-50 p-3 text-sm text-muted-foreground text-center">
+                                    Không tìm thấy tài liệu "{searchQuery}"
+                                </div>
+                            ) : null;
+                        })()}
 
                         <Input
                             ref={inputRef}
                             value={messageInput}
                             onChange={handleInputChange}
-                            onKeyUp={handleKeyPress}
+                            onKeyDown={handleKeyPress}
                             placeholder="Nhập tin nhắn (gõ @ để tag tài liệu) . . ."
                             disabled={isSending}
                             className="flex-1 border-none outline-none fo bg-secondary"
