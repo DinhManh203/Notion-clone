@@ -42,7 +42,7 @@ export const Navigation = () => {
     const params = useParams();
     const pathname = usePathname();
     const searchParams = useSearchParams();
-    const isMobile = useMediaQuery("(max-width: 350px)");
+    const isMobile = useMediaQuery("(max-width: 450px)");
     const create = useMutation(api.documents.create);
 
     const isResizingRef = useRef(false);
@@ -76,11 +76,9 @@ export const Navigation = () => {
         } else {
             resetWidth();
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isMobile]);
 
     useEffect(() => {
-        // Don't collapse if we're about to open the pinned box
         if (isMobile && searchParams?.get("open") !== "pinned") {
             collapse();
         }
