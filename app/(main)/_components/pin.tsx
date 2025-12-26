@@ -31,9 +31,7 @@ const Pin = ({ itemId }: { itemId: string }) => {
       });
 
       promise.then(() => {
-        setTimeout(() => {
-          router.push("/documents?open=pinned");
-        }, 500);
+        router.push("/documents?open=pinned");
       });
     } catch (error) {
       console.error("Lỗi khi ghim:", error);

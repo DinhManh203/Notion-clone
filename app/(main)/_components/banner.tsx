@@ -29,11 +29,7 @@ export const Banner = ({
             error: "Lỗi không xóa được."
         });
 
-        promise.then(() => {
-            setTimeout(() => {
-                router.push("/documents");
-            }, 500);
-        });
+        router.push("/documents");
     };
 
     const onRestore = () => {

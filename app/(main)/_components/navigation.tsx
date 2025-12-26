@@ -169,11 +169,7 @@ export const Navigation = () => {
 
     const handleCreate = () => {
         const promise = create({ title: "Không có tiêu đề" })
-            .then((documentId) => {
-                setTimeout(() => {
-                    router.push(`/documents/${documentId}`);
-                }, 500);
-            });
+            .then((documentId) => router.push(`/documents/${documentId}`));
         toast.promise(promise, {
             loading: "Đang tạo ghi chú mới ...",
             success: "Ghi chú mới đã được tạo!",
