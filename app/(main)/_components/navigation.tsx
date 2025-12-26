@@ -42,7 +42,7 @@ export const Navigation = () => {
     const params = useParams();
     const pathname = usePathname();
     const searchParams = useSearchParams();
-    const isMobile = useMediaQuery("(max-width: 450px)");
+    const isMobile = useMediaQuery("(max-width: 350px)");
     const create = useMutation(api.documents.create);
 
     const isResizingRef = useRef(false);

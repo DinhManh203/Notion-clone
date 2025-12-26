@@ -52,9 +52,11 @@ export const Navbar = ({
                         className="h-6 w-6 text-slate-500"
                     />
                 )}
-                <div className="flex items-center justify-between w-full">
-                    <Title initialData={document} />
-                    <div className="flex items-center gap-x-2 ml-auto">
+                <div className="flex flex-col md:flex-row md:items-center justify-between w-full gap-y-2 md:gap-y-0">
+                    <div className="flex-1 min-w-0">
+                        <Title initialData={document} />
+                    </div>
+                    <div className="flex items-center gap-x-2 md:ml-auto flex-shrink-0">
                         <Publish initialData={document} />
                         <Pin itemId={document._id} />
                         <Menu documentId={document._id} />
