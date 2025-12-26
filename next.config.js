@@ -7,6 +7,10 @@ const nextConfig = {
                 protocol: 'https',
                 hostname: 'files.edgestore.dev',
             },
+            {
+                protocol: 'https',
+                hostname: 'img.clerk.com',
+            },
         ],
         formats: ['image/avif', 'image/webp'],
         minimumCacheTTL: 60,
