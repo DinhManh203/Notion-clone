@@ -173,7 +173,7 @@ export function ChatArea({
                     setSelectedDocIndex((prev) =>
                         prev > 0 ? prev - 1 : filteredDocs.length - 1
                     );
-                } else if (e.key === "Enter") {
+                } else if (e.key === "Enter" || e.key === "Tab") {
                     e.preventDefault();
                     const selectedDoc = filteredDocs[selectedDocIndex];
                     if (selectedDoc) {

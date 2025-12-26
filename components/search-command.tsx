@@ -6,7 +6,7 @@ import { useQuery } from "convex/react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/clerk-react";
 
-import { 
+import {
     CommandDialog,
     CommandEmpty,
     CommandGroup,
@@ -48,20 +48,33 @@ export const SearchCommand = () => {
         onClose();
     };
 
-    if(!isMounted) {
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === "Tab" && isOpen && documents && documents.length > 0) {
+                e.preventDefault();
+                // Select the first document in the list
+                onSelect(documents[0]._id);
+            }
+        };
+
+        document.addEventListener("keydown", handleKeyDown);
+        return () => document.removeEventListener("keydown", handleKeyDown);
+    }, [isOpen, documents]);
+
+    if (!isMounted) {
         return null;
     }
 
     return (
         <CommandDialog open={isOpen} onOpenChange={onClose}>
-            <CommandInput 
+            <CommandInput
                 placeholder={`Tìm ${user?.username}'s MiNote...`}
             />
             <CommandList>
                 <CommandEmpty>Không tìm thấy kết quả</CommandEmpty>
                 <CommandGroup heading="Tài liệu">
                     {documents?.map((document) => (
-                        <CommandItem 
+                        <CommandItem
                             key={document._id}
                             value={`${document._id}-${document.title}`}
                             title={document.title}
