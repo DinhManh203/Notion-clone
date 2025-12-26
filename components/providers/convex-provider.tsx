@@ -19,6 +19,12 @@ export const ConvexClientProvider = ({
             routerReplace={(to) => window.location.replace(to)}
             isSatellite={false}
             proxyUrl=""
+            appearance={{
+                elements: {
+                    footer: { display: 'none' },
+                    footerAction__branding: { display: 'none' },
+                },
+            }}
         >
             <ConvexProviderWithClerk
                 useAuth={useAuth}

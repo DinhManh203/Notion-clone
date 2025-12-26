@@ -38,7 +38,11 @@ export const Menu = ({
             error: "Lỗi khi lưu trữ."
         });
 
-        router.push("/documents");
+        promise.then(() => {
+            setTimeout(() => {
+                router.push("/documents");
+            }, 1500);
+        });
     };
 
     return (

@@ -56,13 +56,13 @@ export function ChatArea({
     const updateSession = useMutation(api.chat.updateSession);
     const sendMessage = useAction(api.chat.sendMessage);
 
-    // Handle copy message
+    // Xử lý sao chép tin nhắn
     const handleCopyMessage = async (content: string, messageId: string) => {
         try {
             await navigator.clipboard.writeText(content);
             setCopiedMessageId(messageId);
             toast.success("Đã sao chép tin nhắn!");
-            setTimeout(() => setCopiedMessageId(null), 2000);
+            setTimeout(() => setCopiedMessageId(null), 1500);
         } catch (error) {
             toast.error("Lỗi khi sao chép!");
         }

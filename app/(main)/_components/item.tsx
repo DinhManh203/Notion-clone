@@ -72,7 +72,11 @@ const Item = ({
         event.stopPropagation();
         if (!id) return;
         const promise = archive({ id })
-            .then(() => router.push("/documents"))
+            .then(() => {
+                setTimeout(() => {
+                    router.push("/documents");
+                }, 1500);
+            })
 
         toast.promise(promise, {
             loading: "Đang chuyển vào thùng rác...",
@@ -87,7 +91,11 @@ const Item = ({
         event.stopPropagation();
         if (!id) return;
         const promise = pinDocument({ id })
-            .then(() => router.push("/documents?open=pinned"))
+            .then(() => {
+                setTimeout(() => {
+                    router.push("/documents?open=pinned");
+                }, 1500);
+            })
 
         toast.promise(promise, {
             loading: "Đang ghim ghi chú...",
@@ -113,7 +121,9 @@ const Item = ({
                 if (!expanded) {
                     onExpand?.();
                 }
-                router.push(`/documents/${documentId}`);
+                setTimeout(() => {
+                    router.push(`/documents/${documentId}`);
+                }, 1500);
             });
         toast.promise(promise, {
             loading: "Đang tạo ghi chú mới...",
