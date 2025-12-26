@@ -4,9 +4,10 @@ import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2, MessageCircle, ChevronLeft } from "lucide-react";
+import { Plus, Trash2, ChevronLeft } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useTheme } from "next-themes";
 
 interface ChatSidebarProps {
     sessions: any[] | undefined;
@@ -25,6 +26,7 @@ export function ChatSidebar({
 }: ChatSidebarProps) {
     const createSession = useMutation(api.chat.createSession);
     const deleteSession = useMutation(api.chat.deleteSession);
+    const { theme, resolvedTheme } = useTheme();
 
     const handleCreateSession = async () => {
         try {
@@ -95,8 +97,12 @@ export function ChatSidebar({
 
                     {sessions?.length === 0 && (
                         <EmptyState
-                            icon={<MessageCircle className="h-8 w-8" />}
-                            text="Chưa có chat nào"
+                            icon={<img
+                                src={(resolvedTheme || theme) === "dark" ? "/welcome-chat-dark.png" : "/welcome-chat.png"}
+                                alt="Empty chat"
+                                className="w-28 h-28 object-contain"
+                            />}
+                            text="Bắt đầu bằng cách tạo một đoạn chat mới!"
                         />
                     )}
 
@@ -186,7 +192,7 @@ function EmptyState({
     return (
         <div className="flex flex-col items-center justify-center h-32 text-muted-foreground">
             {icon && <div className="mb-2">{icon}</div>}
-            <p className="text-sm">{text}</p>
+            <p className="text-sm text-center">{text}</p>
         </div>
     );
 }
