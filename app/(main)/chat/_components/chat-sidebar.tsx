@@ -90,7 +90,7 @@ export function ChatSidebar({
                 </div>
 
                 {/* Sessions */}
-                <div className="flex-1 overflow-y-auto p-2">
+                <div className="flex-1 overflow-y-auto p-2 scrollbar-hide">
                     {sessions === undefined && (
                         <EmptyState text="Đang tải..." />
                     )}
@@ -131,7 +131,7 @@ export function ChatSidebar({
                                             </p> */}
                                         </div>
 
-                                        {/* Delete button */}
+                                        {/* Nút xóa */}
                                         <Button
                                             variant="ghost"
                                             size="sm"
