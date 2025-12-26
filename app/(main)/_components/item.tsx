@@ -86,8 +86,7 @@ const Item = ({
     ) => {
         event.stopPropagation();
         if (!id) return;
-        const promise = pinDocument({ id })
-            .then(() => router.push("/documents?open=pinned"))
+        const promise = pinDocument({ id });
 
         toast.promise(promise, {
             loading: "Đang ghim ghi chú...",

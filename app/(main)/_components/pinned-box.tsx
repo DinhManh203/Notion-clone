@@ -299,7 +299,7 @@ export const PinnedBox = () => {
                 onDragStart={handleDragStart}
                 onDragEnd={handleDragEnd}
             >
-                <div className="mt-2 px-1 pb-1">
+                <div className="mt-2 px-1 pb-1 max-h-60 overflow-y-auto">
                     <p className="hidden last:block text-xs text-center text-muted-foreground pb-2">
                         Không có tài liệu đã ghim nào.
                     </p>

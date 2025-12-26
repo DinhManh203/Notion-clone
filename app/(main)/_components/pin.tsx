@@ -29,10 +29,6 @@ const Pin = ({ itemId }: { itemId: string }) => {
           return "Lỗi khi ghim. Vui lòng thử lại.";
         },
       });
-
-      promise.then(() => {
-        router.push("/documents?open=pinned");
-      });
     } catch (error) {
       console.error("Lỗi khi ghim:", error);
       toast.error("Lỗi khi ghim. Vui lòng thử lại.");

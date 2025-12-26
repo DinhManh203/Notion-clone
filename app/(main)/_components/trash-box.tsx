@@ -110,7 +110,7 @@ export const TrashBox = () => {
                 </div>
             )}
 
-            <div className="mt-2 px-1 pb-1">
+            <div className="mt-2 px-1 pb-1 max-h-60 overflow-y-auto">
                 <p className="hidden last:block text-xs text-center text-muted-foreground pb-2">
                     Không tìm thấy thư mục.
                 </p>
