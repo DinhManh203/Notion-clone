@@ -80,13 +80,18 @@ export const Navigation = () => {
     }, [isMobile]);
 
     useEffect(() => {
-        if (isMobile) {
+        // Don't collapse if we're about to open the pinned box
+        if (isMobile && searchParams?.get("open") !== "pinned") {
             collapse();
         }
-    }, [pathname, isMobile]);
+    }, [pathname, isMobile, searchParams]);
 
     useEffect(() => {
         if (searchParams?.get("open") === "pinned") {
+            // Open sidebar on mobile to show the popup
+            if (isMobile) {
+                resetWidth();
+            }
             setOpenPinnedBox(true);
             const timer = setTimeout(() => {
                 const newUrl = new URL(window.location.href);
@@ -95,7 +100,7 @@ export const Navigation = () => {
             }, 100);
             return () => clearTimeout(timer);
         }
-    }, [searchParams, router]);
+    }, [searchParams, router, isMobile]);
 
     const handleMouseDown = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
         event.preventDefault();
@@ -179,7 +184,7 @@ export const Navigation = () => {
             <aside
                 ref={sidebarRef}
                 className={cn(
-                    "group/sidebar h-full bg-secondary overflow-y-auto relative flex w-60 flex-col z-30",
+                    "group/sidebar h-full bg-secondary overflow-y-auto relative flex w-60 flex-col z-30 overflow-x-hidden md:overflow-x-auto",
                     isMobile && "w-0"
                 )}
                 style={{

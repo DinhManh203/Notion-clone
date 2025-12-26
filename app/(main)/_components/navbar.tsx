@@ -56,7 +56,7 @@ export const Navbar = ({
                     <div className="flex-1 min-w-0">
                         <Title initialData={document} />
                     </div>
-                    <div className="flex items-center gap-x-2 md:ml-auto flex-shrink-0">
+                    <div className="flex items-center justify-between gap-x-2 md:ml-auto flex-shrink-0">
                         <Publish initialData={document} />
                         <Pin itemId={document._id} />
                         <Menu documentId={document._id} />

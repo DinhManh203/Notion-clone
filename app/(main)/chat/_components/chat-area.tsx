@@ -221,7 +221,7 @@ export function ChatArea({
                     alt="Empty chat"
                     className="w-28 h-28 object-contain"
                 />
-                <h2 className="text-2xl font-semibold mb-2">Chào mừng đến với MiNote Chat</h2>
+                <h2 className="text-2xl text-center font-semibold mb-2">Chào mừng đến với MiNote Chat</h2>
                 <p className="text-sm">&quot;Chọn&quot; hoặc &quot;Tạo&quot; đoạn chat mới để bắt đầu</p>
             </div>
         );
