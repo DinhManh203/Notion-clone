@@ -17,7 +17,7 @@ const Heading = () => {
                 <span className="underline">MiNote</span>
             </h1>
             <h3 className="text-base sm:text-xl md:text-2xl font-medium">
-                MiNote chứa không gian làm việc<br />
+                MiNote giúp không gian làm việc<br />
                 tốt hơn, nhanh hơn.
             </h3>
             {isLoading && (

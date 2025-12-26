@@ -8,7 +8,6 @@ import {
     Settings,
     Plus,
     Trash,
-    ChartNoAxesColumn,
     Clock,
     MessageCircle,
     BadgeInfo,

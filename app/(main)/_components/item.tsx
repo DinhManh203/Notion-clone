@@ -20,6 +20,7 @@ import { api } from '@/convex/_generated/api';
 import { useRouter } from 'next/navigation';
 import { useUser } from "@clerk/clerk-react";
 import { toast } from "sonner";
+import { useMediaQuery } from 'usehooks-ts';
 import {
     DropdownMenu,
     DropdownMenuSeparator,
@@ -62,6 +63,7 @@ const Item = ({
 }: ItemProps) => {
     const { user } = useUser();
     const router = useRouter();
+    const isMobile = useMediaQuery("(max-width: 768px)");
     const create = useMutation(api.documents.create);
     const archive = useMutation(api.documents.archive);
     const pinDocument = useMutation(api.documents.pin);
@@ -86,7 +88,8 @@ const Item = ({
     ) => {
         event.stopPropagation();
         if (!id) return;
-        const promise = pinDocument({ id });
+        const promise = pinDocument({ id })
+            .then(() => router.push("/documents?open=pinned"))
 
         toast.promise(promise, {
             loading: "Đang ghim ghi chú...",
@@ -205,7 +208,7 @@ const Item = ({
             )}
             {!!id && (
                 <div className='ml-auto flex items-center gap-x-2'>
-                    <DropdownMenu >
+                    <DropdownMenu modal={isMobile}>
                         <DropdownMenuTrigger
                             onClick={(e) => e.stopPropagation()}
                             asChild
@@ -214,22 +217,23 @@ const Item = ({
                                 role='button'
                                 className='opacity-100 md:opacity-0 md:group-hover:opacity-100 h-full ml-auto rounded-sm hover:bg-neutral-300 dark:hover:bg-neutral-600'
                             >
-                                <MoreHorizontal className='h-4 w-4 text-muted-foreground' />
+                                <MoreHorizontal className='h-5 w-5 md:h-4 md:w-4 text-muted-foreground' />
                             </div>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent
                             className='w-60'
                             align='start'
-                            side='right'
+                            side={isMobile ? 'bottom' : 'right'}
+                            sideOffset={isMobile ? 8 : 0}
                             forceMount
                         >
                             <DropdownMenuItem onClick={onPin}>
-                                <PinIcon className='h-4 w-4 mr-2' />
+                                <PinIcon className='h-5 w-5 md:h-4 md:w-4 mr-2' />
                                 Ghim
                             </DropdownMenuItem>
 
                             <DropdownMenuItem onClick={onArchive}>
-                                <Trash className='h-4 w-4 mr-2' />
+                                <Trash className='h-5 w-5 md:h-4 md:w-4 mr-2' />
                                 Xóa ghi chú
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
@@ -242,7 +246,7 @@ const Item = ({
                         role='button'
                         onClick={onCreate}
                         className='opacity-100 md:opacity-0 md:group-hover:opacity-100 h-full ml-auto rounded-sm hover:bg-neutral-300 dark:hover:bg-neutral-600'>
-                        <Plus className='h-4 w-4 text-muted-foreground' />
+                        <Plus className='h-5 w-5 md:h-4 md:w-4 text-muted-foreground' />
                     </div>
                 </div>
             )}
