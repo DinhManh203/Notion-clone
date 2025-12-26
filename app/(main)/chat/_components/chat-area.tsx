@@ -304,6 +304,7 @@ export function ChatArea({
                             className="object-contain"
                         />
                         <p>Bạn có gặp vấn đề gì không ?</p>
+                        <p>Nếu có thì hỏi mình nhé </p>
                     </div>
                 ) : (
                     <div className="max-w-3xl mx-auto space-y-6">

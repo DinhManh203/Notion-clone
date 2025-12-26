@@ -49,7 +49,7 @@ export const Navbar = ({
                     <MenuIcon
                         role="button"
                         onClick={onResetWidth}
-                        className="h-6 w-6 text-slate-500"
+                        className="h-8 w-8 md:h-6 md:w-6 text-slate-500"
                     />
                 )}
                 <div className="flex flex-col md:flex-row md:items-center justify-between w-full gap-y-2 md:gap-y-0">
