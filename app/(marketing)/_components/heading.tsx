@@ -34,7 +34,12 @@ const Heading = () => {
                 </Button>
             )}
             {!isAuthenticated && !isLoading && (
-                <SignInButton mode="modal">
+                <SignInButton mode="modal" appearance={{
+                    elements: {
+                        footer: { display: 'none' },
+                        footerAction__branding: { display: 'none' },
+                    },
+                }}>
                     <Button>
                         Tham gia MiNote miễn phí
                         <ArrowRight className="h-4 w-4 ml-2" />
