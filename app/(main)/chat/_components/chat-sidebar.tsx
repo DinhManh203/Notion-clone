@@ -161,19 +161,19 @@ export function ChatSidebar({
                 </div>
             </aside>
 
-            {/* Toggle button - mobile only */}
+            {/* Nút chuyển đổi - chỉ dành cho thiết bị di động */}
             <button
                 onClick={onToggle}
                 className={cn(
                     "fixed top-16 z-[25] p-[8px] rounded-lg border bg-background shadow-md hover:shadow-lg hover:bg-accent transition-all duration-300",
-                    "md:hidden", // Only show on mobile
+                    "md:hidden",
                     isOpen ? "left-[calc(256px-2rem)]" : "left-4"
                 )}
                 aria-label={isOpen ? "Đóng sidebar" : "Mở sidebar"}
             >
                 <ChevronLeft
                     className={cn(
-                        "h-5 w-5 transition-transform duration-300",
+                        "h-4 w-4 transition-transform duration-300",
                         !isOpen && "rotate-180"
                     )}
                 />

@@ -128,12 +128,12 @@ export const Navigation = () => {
             setIsCollapsed(false);
             setIsResetting(true);
 
-            // Reset width first
+            // Đặt lại chiều rộng trước
             sidebarRef.current.style.width = isMobile ? "100%" : "250px";
             navbarRef.current.style.setProperty("width", isMobile ? '0' : 'calc(100% - 250px)');
             navbarRef.current.style.setProperty("left", isMobile ? "100%" : "250px");
 
-            // Fade in content slightly after width animation starts
+            // Nội dung sẽ hiện lên mờ dần sau khi hiệu ứng chuyển đổi chiều rộng bắt đầu.
             requestAnimationFrame(() => {
                 if (sidebarRef.current) {
                     sidebarRef.current.style.opacity = "1";
@@ -149,10 +149,9 @@ export const Navigation = () => {
             setIsCollapsed(true);
             setIsResetting(true);
 
-            // Fade out content immediately
             sidebarRef.current.style.opacity = "0";
 
-            // Collapse width after fade completes
+            // Thu nhỏ chiều rộng sau khi hiệu ứng mờ dần hoàn tất.
             setTimeout(() => {
                 if (sidebarRef.current && navbarRef.current) {
                     sidebarRef.current.style.width = "0";
@@ -192,11 +191,9 @@ export const Navigation = () => {
             >
                 <div
                     onClick={collapse}
-                    role='button'
+                    role="button"
                     className={cn(
-                        "h-6 w-6 text-muted-foreground rounded-sm hover:bg-neutral-300 dark:hover:bg-neutral-600 absolute top-3 right-2 transition-all duration-200 hover:scale-110 active:scale-95 hover:rotate-[-5deg]",
-                        isMobile && "opacity-100",
-                        !isCollapsed && "opacity-0 group-hover/sidebar:opacity-100"
+                        "h-6 w-6 text-muted-foreground rounded-sm hover:bg-neutral-300 dark:hover:bg-neutral-600 absolute top-3 right-2 transition-all duration-200 hover:scale-110 active:scale-95 hover:rotate-[-5deg] opacity-100"
                     )}
                 >
                     <ChevronsLeft className="h-6 w-6 transition-all duration-200" />
