@@ -15,6 +15,7 @@ interface ChatSidebarProps {
     onSelectSession: (id: Id<"chatSessions"> | null) => void;
     isOpen: boolean;
     onToggle: () => void;
+    isMobile?: boolean;
 }
 
 export function ChatSidebar({
@@ -23,6 +24,7 @@ export function ChatSidebar({
     onSelectSession,
     isOpen,
     onToggle,
+    isMobile = false,
 }: ChatSidebarProps) {
     const createSession = useMutation(api.chat.createSession);
     const deleteSession = useMutation(api.chat.deleteSession);
@@ -32,9 +34,21 @@ export function ChatSidebar({
         try {
             const sessionId = await createSession({ title: "Đoạn chat mới" });
             onSelectSession(sessionId);
+            // Đóng sidebar trên mobile sau khi tạo session
+            if (isMobile) {
+                onToggle();
+            }
             toast.success("Đã tạo đoạn chat mới!");
         } catch {
             toast.error("Lỗi khi tạo chat");
+        }
+    };
+
+    const handleSelectSession = (sessionId: Id<"chatSessions">) => {
+        onSelectSession(sessionId);
+        // Đóng sidebar trên mobile sau khi chọn session
+        if (isMobile && isOpen) {
+            onToggle();
         }
     };
 
@@ -114,7 +128,7 @@ export function ChatSidebar({
                                 return (
                                     <div
                                         key={session._id}
-                                        onClick={() => onSelectSession(session._id)}
+                                        onClick={() => handleSelectSession(session._id)}
                                         className={cn(
                                             "group flex items-center justify-between rounded-lg px-3 py-2 cursor-pointer transition-colors",
                                             isActive

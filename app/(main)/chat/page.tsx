@@ -14,17 +14,19 @@ export default function ChatPage() {
     const router = useRouter();
     const isMobile = useMediaQuery("(max-width: 768px)");
     const [activeSessionId, setActiveSessionId] = useState<Id<"chatSessions"> | null>(null);
-    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(!isMobile);
 
     const sessions = useQuery(api.chat.getSessions);
 
     // Tải trước dữ liệu tài liệu trong nền để tăng tốc độ điều hướng.
     usePrefetchDocuments();
 
-    // Tự động mở sidebar khi chuyển từ mobile sang desktop
+    // Tự động mở/đóng sidebar khi chuyển đổi giữa mobile và desktop
     useEffect(() => {
         if (!isMobile) {
             setIsSidebarOpen(true);
+        } else {
+            setIsSidebarOpen(false);
         }
     }, [isMobile]);
 
@@ -46,6 +48,7 @@ export default function ChatPage() {
                 onSelectSession={setActiveSessionId}
                 isOpen={isSidebarOpen}
                 onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
+                isMobile={isMobile}
             />
             <ChatArea
                 activeSessionId={activeSessionId}
