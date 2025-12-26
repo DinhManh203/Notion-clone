@@ -115,8 +115,10 @@ export const Navigation = () => {
         if (newWidth > 680) newWidth = 680;
         if (sidebarRef.current && navbarRef.current) {
             sidebarRef.current.style.width = `${newWidth}px`;
-            navbarRef.current.style.setProperty("left", `${newWidth}px`);
-            navbarRef.current.style.setProperty("width", `calc(100% - ${newWidth}px)`);
+            if (!isMobile) {
+                navbarRef.current.style.setProperty("left", `${newWidth}px`);
+                navbarRef.current.style.setProperty("width", `calc(100% - ${newWidth}px)`);
+            }
         }
     };
 
@@ -133,8 +135,10 @@ export const Navigation = () => {
 
             // Đặt lại chiều rộng trước
             sidebarRef.current.style.width = isMobile ? "100%" : "250px";
-            navbarRef.current.style.setProperty("width", isMobile ? '0' : 'calc(100% - 250px)');
-            navbarRef.current.style.setProperty("left", isMobile ? "100%" : "250px");
+            if (!isMobile) {
+                navbarRef.current.style.setProperty("width", 'calc(100% - 250px)');
+                navbarRef.current.style.setProperty("left", "250px");
+            }
 
             // Nội dung sẽ hiện lên mờ dần sau khi hiệu ứng chuyển đổi chiều rộng bắt đầu.
             requestAnimationFrame(() => {
@@ -158,8 +162,10 @@ export const Navigation = () => {
             setTimeout(() => {
                 if (sidebarRef.current && navbarRef.current) {
                     sidebarRef.current.style.width = "0";
-                    navbarRef.current.style.setProperty("width", "100%");
-                    navbarRef.current.style.setProperty("left", "0");
+                    if (!isMobile) {
+                        navbarRef.current.style.setProperty("width", "100%");
+                        navbarRef.current.style.setProperty("left", "0");
+                    }
                 }
             }, 200);
 
@@ -213,11 +219,16 @@ export const Navigation = () => {
                         icon={MessageCircle}
                         onMouseEnter={() => router.prefetch('/chat')}
                     />
-                    <Popover open={openPinnedBox} onOpenChange={setOpenPinnedBox}>
+                    <Popover open={openPinnedBox} onOpenChange={setOpenPinnedBox} modal={isMobile}>
                         <PopoverTrigger className="w-full mt-4">
                             <Item label="Tài liệu đã ghim" icon={Pin} />
                         </PopoverTrigger>
-                        <PopoverContent className="w-72" side={isMobile ? "bottom" : "right"}>
+                        <PopoverContent
+                            className="w-72"
+                            side={isMobile ? "bottom" : "right"}
+                            sideOffset={isMobile ? 8 : 0}
+                            align="start"
+                        >
                             <PinnedBox />
                         </PopoverContent>
                     </Popover>
@@ -226,11 +237,16 @@ export const Navigation = () => {
                 <div className="mt-4">
                     <DocumentList />
                     <Item onClick={handleCreate} icon={Plus} label="Thêm ghi chú" />
-                    <Popover>
+                    <Popover modal={isMobile}>
                         <PopoverTrigger className="w-full mt-4">
                             <Item label="Thùng rác" icon={Trash} />
                         </PopoverTrigger>
-                        <PopoverContent className="w-72" side={isMobile ? "bottom" : "right"}>
+                        <PopoverContent
+                            className="w-72"
+                            side={isMobile ? "bottom" : "right"}
+                            sideOffset={isMobile ? 8 : 0}
+                            align="start"
+                        >
                             <TrashBox />
                         </PopoverContent>
                     </Popover>
