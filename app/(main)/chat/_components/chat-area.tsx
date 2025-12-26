@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Send, Loader2, Menu, Settings, X, FileText, Copy, Check } from "lucide-react";
 import { toast } from "sonner";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 import {
     Popover,
@@ -216,10 +217,12 @@ export function ChatArea({
     if (!activeSessionId) {
         return (
             <div className="flex-1 flex flex-col items-center justify-center bg-background text-muted-foreground">
-                <img
+                <Image
                     src={(resolvedTheme || theme) === "dark" ? "/welcome-chat-dark.png" : "/welcome-chat.png"}
                     alt="Empty chat"
-                    className="w-28 h-28 object-contain"
+                    width={112}
+                    height={112}
+                    className="object-contain"
                 />
                 <h2 className="text-2xl text-center font-semibold mb-2">Chào mừng đến với MiNote Chat</h2>
                 <p className="text-sm">&quot;Chọn&quot; hoặc &quot;Tạo&quot; đoạn chat mới để bắt đầu</p>
@@ -293,10 +296,12 @@ export function ChatArea({
                     </div>
                 ) : messages.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
-                        <img
+                        <Image
                             src={(resolvedTheme || theme) === "dark" ? "/empty-chat-dark.png" : "/empty-chat.png"}
                             alt="Empty chat"
-                            className="w-28 h-28 object-contain"
+                            width={112}
+                            height={112}
+                            className="object-contain"
                         />
                         <p>Bạn có gặp vấn đề gì không ?</p>
                     </div>
@@ -313,10 +318,12 @@ export function ChatArea({
                                 {/* Avatar and Name */}
                                 {message.role === "assistant" ? (
                                     <div className="flex items-center gap-2">
-                                        <img
+                                        <Image
                                             src="/nhan-vien.png"
                                             alt="MiNote Bot"
-                                            className="w-8 h-8 rounded-full"
+                                            width={32}
+                                            height={32}
+                                            className="rounded-full"
                                         />
                                         <p className="text-[14px] text-muted-foreground">
                                             MiNote - Nhân viên hỗ trợ (AI)
@@ -327,10 +334,12 @@ export function ChatArea({
                                         <p className="text-[14px] text-muted-foreground">
                                             {user?.username}
                                         </p>
-                                        <img
-                                            src={user?.imageUrl}
+                                        <Image
+                                            src={user?.imageUrl || ""}
                                             alt="Avatar"
-                                            className="w-8 h-8 rounded-full"
+                                            width={32}
+                                            height={32}
+                                            className="rounded-full"
                                         />
                                     </div>
                                 )}
@@ -396,10 +405,12 @@ export function ChatArea({
                             <div className="flex gap-4">
                                 <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
                                     {/* <MessageCircle className="h-4 w-4 text-primary-foreground" /> */}
-                                    <img
+                                    <Image
                                         src="/nhan-vien.png"
                                         alt="MiNote Bot"
-                                        className="w-8 h-8 rounded-full"
+                                        width={32}
+                                        height={32}
+                                        className="rounded-full"
                                     />
                                 </div>
                                 <div className="bg-muted rounded-2xl px-4 py-3">

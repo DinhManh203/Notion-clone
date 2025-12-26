@@ -15,7 +15,7 @@ import {
     Pin
 } from "lucide-react";
 import { usePathname, useParams, useRouter, useSearchParams } from "next/navigation";
-import React, { ElementRef, useEffect, useRef, useState } from 'react';
+import React, { ElementRef, useEffect, useRef, useState, useCallback } from 'react';
 import { useMediaQuery } from 'usehooks-ts';
 import { useMutation } from "convex/react";
 import { cn } from "@/lib/utils";
@@ -70,36 +70,6 @@ export const Navigation = () => {
         return `${mins} phút ${secs} giây`;
     };
 
-    useEffect(() => {
-        if (isMobile) {
-            collapse();
-        } else {
-            resetWidth();
-        }
-    }, [isMobile]);
-
-    useEffect(() => {
-        if (isMobile && searchParams?.get("open") !== "pinned") {
-            collapse();
-        }
-    }, [pathname, isMobile, searchParams]);
-
-    useEffect(() => {
-        if (searchParams?.get("open") === "pinned") {
-            // Open sidebar on mobile to show the popup
-            if (isMobile) {
-                resetWidth();
-            }
-            setOpenPinnedBox(true);
-            const timer = setTimeout(() => {
-                const newUrl = new URL(window.location.href);
-                newUrl.searchParams.delete("open");
-                router.replace(newUrl.pathname + newUrl.search);
-            }, 100);
-            return () => clearTimeout(timer);
-        }
-    }, [searchParams, router, isMobile]);
-
     const handleMouseDown = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
         event.preventDefault();
         event.stopPropagation();
@@ -128,7 +98,7 @@ export const Navigation = () => {
         document.removeEventListener("mouseup", handleMouseUp);
     };
 
-    const resetWidth = () => {
+    const resetWidth = useCallback(() => {
         if (sidebarRef.current && navbarRef.current) {
             setIsCollapsed(false);
             setIsResetting(true);
@@ -149,9 +119,9 @@ export const Navigation = () => {
 
             setTimeout(() => setIsResetting(false), 450);
         }
-    };
+    }, [isMobile]);
 
-    const collapse = () => {
+    const collapse = useCallback(() => {
         if (sidebarRef.current && navbarRef.current) {
             setIsCollapsed(true);
             setIsResetting(true);
@@ -171,7 +141,37 @@ export const Navigation = () => {
 
             setTimeout(() => setIsResetting(false), 450);
         }
-    };
+    }, [isMobile]);
+
+    useEffect(() => {
+        if (isMobile) {
+            collapse();
+        } else {
+            resetWidth();
+        }
+    }, [isMobile, collapse, resetWidth]);
+
+    useEffect(() => {
+        if (isMobile && searchParams?.get("open") !== "pinned") {
+            collapse();
+        }
+    }, [pathname, isMobile, searchParams, collapse]);
+
+    useEffect(() => {
+        if (searchParams?.get("open") === "pinned") {
+            // Mở thanh bên trên thiết bị di động để hiển thị cửa sổ bật lên
+            if (isMobile) {
+                resetWidth();
+            }
+            setOpenPinnedBox(true);
+            const timer = setTimeout(() => {
+                const newUrl = new URL(window.location.href);
+                newUrl.searchParams.delete("open");
+                router.replace(newUrl.pathname + newUrl.search);
+            }, 100);
+            return () => clearTimeout(timer);
+        }
+    }, [searchParams, router, isMobile, resetWidth]);
 
     const handleCreate = () => {
         const promise = create({ title: "Không có tiêu đề" })

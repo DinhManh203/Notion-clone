@@ -8,6 +8,7 @@ import { Plus, Trash2, ChevronLeft } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useTheme } from "next-themes";
+import Image from "next/image";
 
 interface ChatSidebarProps {
     sessions: any[] | undefined;
@@ -111,10 +112,12 @@ export function ChatSidebar({
 
                     {sessions?.length === 0 && (
                         <EmptyState
-                            icon={<img
+                            icon={<Image
                                 src={(resolvedTheme || theme) === "dark" ? "/welcome-chat-dark.png" : "/welcome-chat.png"}
                                 alt="Empty chat"
-                                className="w-28 h-28 object-contain"
+                                width={112}
+                                height={112}
+                                className="object-contain"
                             />}
                             text="Bắt đầu bằng cách tạo một đoạn chat mới!"
                         />

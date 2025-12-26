@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { File } from "lucide-react";
 import { useQuery } from "convex/react";
 import { useRouter } from "next/navigation";
@@ -43,10 +43,10 @@ export const SearchCommand = () => {
         return () => document.removeEventListener("keydown", down);
     }, [toggle]);
 
-    const onSelect = (id: string) => {
+    const onSelect = useCallback((id: string) => {
         router.push(`/documents/${id}`);
         onClose();
-    };
+    }, [router, onClose]);
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -59,7 +59,7 @@ export const SearchCommand = () => {
 
         document.addEventListener("keydown", handleKeyDown);
         return () => document.removeEventListener("keydown", handleKeyDown);
-    }, [isOpen, documents]);
+    }, [isOpen, documents, onSelect]);
 
     if (!isMounted) {
         return null;
