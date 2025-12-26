@@ -174,7 +174,7 @@ export const ChatModal = () => {
                                 <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
                                     <MessageCircle className="h-12 w-12 mb-4" />
                                     <p>Chưa có cuộc trò chuyện nào</p>
-                                    <p className="text-sm">Nhấn "Tạo chat mới" để bắt đầu</p>
+                                    <p className="text-sm">Nhấn &quot;Tạo chat mới&quot; để bắt đầu</p>
                                 </div>
                             ) : (
                                 <div className="space-y-2">

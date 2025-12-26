@@ -76,6 +76,7 @@ export const Navigation = () => {
         } else {
             resetWidth();
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isMobile]);
 
     useEffect(() => {

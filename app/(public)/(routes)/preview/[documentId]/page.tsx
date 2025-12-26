@@ -12,9 +12,9 @@ import { useMemo } from 'react';
 import { Edit, Lock } from 'lucide-react';
 
 interface DocumentIdPageProps {
-    params: {
+    params: Promise<{
         documentId: Id<"documents">;
-    };
+    }>;
 };
 
 const DocumentIdPage = ({
@@ -22,8 +22,11 @@ const DocumentIdPage = ({
 }: DocumentIdPageProps) => {
     const Editor = useMemo(() => dynamic(() => import("@/components/editor"), { ssr: false }), []);
 
+    // Unwrap params Promise for Next.js 15
+    const { documentId } = React.use(params);
+
     const document = useQuery(api.documents.getById, {
-        documentId: params.documentId
+        documentId: documentId
     });
 
     const update = useMutation(api.documents.update);
@@ -36,7 +39,7 @@ const DocumentIdPage = ({
         }
 
         update({
-            id: params.documentId,
+            id: documentId,
             content
         });
     };

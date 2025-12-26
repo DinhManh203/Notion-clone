@@ -222,7 +222,7 @@ export function ChatArea({
                     className="w-28 h-28 object-contain"
                 />
                 <h2 className="text-2xl font-semibold mb-2">Chào mừng đến với MiNote Chat</h2>
-                <p className="text-sm">"Chọn" hoặc "Tạo" đoạn chat mới để bắt đầu</p>
+                <p className="text-sm">&quot;Chọn&quot; hoặc &quot;Tạo&quot; đoạn chat mới để bắt đầu</p>
             </div>
         );
     }
@@ -475,7 +475,7 @@ export function ChatArea({
                                 </div>
                             ) : searchQuery ? (
                                 <div className="absolute bottom-full mb-2 w-full bg-popover border rounded-md shadow-lg z-50 p-3 text-sm text-muted-foreground text-center">
-                                    Không tìm thấy tài liệu "{searchQuery}"
+                                    Không tìm thấy tài liệu &quot;{searchQuery}&quot;
                                 </div>
                             ) : null;
                         })()}
