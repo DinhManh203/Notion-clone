@@ -32,7 +32,7 @@ export const Banner = ({
         promise.then(() => {
             setTimeout(() => {
                 router.push("/documents");
-            }, 1500);
+            }, 500);
         });
     };
 

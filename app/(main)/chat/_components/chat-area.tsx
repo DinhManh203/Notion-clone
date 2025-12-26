@@ -62,7 +62,7 @@ export function ChatArea({
             await navigator.clipboard.writeText(content);
             setCopiedMessageId(messageId);
             toast.success("Đã sao chép tin nhắn!");
-            setTimeout(() => setCopiedMessageId(null), 1500);
+            setTimeout(() => setCopiedMessageId(null), 500);
         } catch (error) {
             toast.error("Lỗi khi sao chép!");
         }

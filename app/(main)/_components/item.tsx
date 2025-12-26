@@ -75,7 +75,7 @@ const Item = ({
             .then(() => {
                 setTimeout(() => {
                     router.push("/documents");
-                }, 1500);
+                }, 500);
             })
 
         toast.promise(promise, {
@@ -94,7 +94,7 @@ const Item = ({
             .then(() => {
                 setTimeout(() => {
                     router.push("/documents?open=pinned");
-                }, 1500);
+                }, 500);
             })
 
         toast.promise(promise, {
@@ -123,7 +123,7 @@ const Item = ({
                 }
                 setTimeout(() => {
                     router.push(`/documents/${documentId}`);
-                }, 1500);
+                }, 500);
             });
         toast.promise(promise, {
             loading: "Đang tạo ghi chú mới...",

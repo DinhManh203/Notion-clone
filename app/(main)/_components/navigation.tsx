@@ -172,7 +172,7 @@ export const Navigation = () => {
             .then((documentId) => {
                 setTimeout(() => {
                     router.push(`/documents/${documentId}`);
-                }, 1500);
+                }, 500);
             });
         toast.promise(promise, {
             loading: "Đang tạo ghi chú mới ...",
