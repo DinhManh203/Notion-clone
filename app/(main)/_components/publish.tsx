@@ -250,7 +250,7 @@ export const Publish = ({
 
             pdf.save(`${initialData.title || "note"}.pdf`);
 
-            toast.success("✅ Đang tải xuống file PDF!");
+            toast.success("Đang tải xuống file PDF!");
         } catch (err) {
             toast.error("Lỗi khi tạo file PDF");
             console.error(err);
