@@ -53,6 +53,13 @@ export const Navigation = () => {
 
     const [usageTime, setUsageTime] = useState(0);
 
+    // Trạng thái cử chỉ chạm cho thao tác vuốt để đóng trên mobile
+    const touchStartX = useRef(0);
+    const touchStartY = useRef(0);
+    const touchCurrentX = useRef(0);
+    const touchCurrentY = useRef(0);
+    const [isSwiping, setIsSwiping] = useState(false);
+
     useEffect(() => {
         const start = Date.now();
         const interval = setInterval(() => {
@@ -182,6 +189,64 @@ export const Navigation = () => {
         });
     };
 
+    // Touch event handlers for swipe-to-close on mobile
+    const handleTouchStart = (e: React.TouchEvent) => {
+        if (!isMobile) return;
+        touchStartX.current = e.touches[0].clientX;
+        touchStartY.current = e.touches[0].clientY;
+        touchCurrentX.current = e.touches[0].clientX;
+        touchCurrentY.current = e.touches[0].clientY;
+    };
+
+    const handleTouchMove = (e: React.TouchEvent) => {
+        if (!isMobile) return;
+        touchCurrentX.current = e.touches[0].clientX;
+        touchCurrentY.current = e.touches[0].clientY;
+
+        const deltaX = touchCurrentX.current - touchStartX.current;
+        const deltaY = Math.abs(touchCurrentY.current - touchStartY.current);
+
+        // Only consider horizontal swipes (deltaX negative means swiping left)
+        if (Math.abs(deltaX) > 10 && deltaY < 50) {
+            setIsSwiping(true);
+
+            // Prevent default scroll behavior during horizontal swipe
+            if (Math.abs(deltaX) > deltaY) {
+                e.preventDefault();
+            }
+
+            // Apply visual feedback during swipe
+            if (sidebarRef.current && deltaX < 0) {
+                const opacity = Math.max(0, 1 + deltaX / 300);
+                const translateX = Math.min(0, deltaX);
+                sidebarRef.current.style.transform = `translateX(${translateX}px)`;
+                sidebarRef.current.style.opacity = `${opacity}`;
+            }
+        }
+    };
+
+    const handleTouchEnd = () => {
+        if (!isMobile) {
+            return;
+        }
+
+        const deltaX = touchCurrentX.current - touchStartX.current;
+        const deltaY = Math.abs(touchCurrentY.current - touchStartY.current);
+
+        // Reset transform
+        if (sidebarRef.current) {
+            sidebarRef.current.style.transform = '';
+            sidebarRef.current.style.opacity = '';
+        }
+
+        // If swiped left more than 80px and mostly horizontal, close the sidebar
+        if (isSwiping && deltaX < -80 && deltaY < 100) {
+            collapse();
+        }
+
+        setIsSwiping(false);
+    };
+
     return (
         <>
             <aside
@@ -196,6 +261,9 @@ export const Navigation = () => {
                         : undefined,
                     willChange: isResetting ? 'width, opacity' : undefined,
                 }}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
             >
                 <div
                     onClick={collapse}

@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    // Optimize images with new remotePatterns format
+    // Tối ưu hóa hình ảnh với định dạng remotePatterns mới.
     images: {
         remotePatterns: [
             {
@@ -38,16 +38,15 @@ const nextConfig = {
         ],
     },
 
-    // Modularize imports for better tree-shaking
+    // Phân chia các lệnh nhập khẩu thành các mô-đun để tối ưu hóa việc loại bỏ mã không cần thiết.
     modularizeImports: {
         '@mui/icons-material': {
             transform: '@mui/icons-material/{{member}}',
         },
     },
 
-    // Webpack optimizations
+    // Tối ưu hóa Webpack
     webpack: (config, { dev, isServer }) => {
-        // Enable caching for faster rebuilds
         config.cache = {
             type: 'filesystem',
             buildDependencies: {
@@ -55,12 +54,10 @@ const nextConfig = {
             },
         };
 
-        // Optimize module resolution
         config.resolve.alias = {
             ...config.resolve.alias,
         };
 
-        // Reduce bundle size in production
         if (!dev && !isServer) {
             config.optimization = {
                 ...config.optimization,
@@ -71,14 +68,12 @@ const nextConfig = {
                     cacheGroups: {
                         default: false,
                         vendors: false,
-                        // Vendor chunk for node_modules
                         vendor: {
                             name: 'vendor',
                             chunks: 'all',
                             test: /node_modules/,
                             priority: 20,
                         },
-                        // Common chunk for shared code
                         common: {
                             name: 'common',
                             minChunks: 2,
@@ -95,13 +90,10 @@ const nextConfig = {
         return config;
     },
 
-    // Optimize production builds
     productionBrowserSourceMaps: false,
 
-    // Enable React strict mode for better development
     reactStrictMode: true,
 
-    // Reduce compilation overhead
     compiler: {
         removeConsole: process.env.NODE_ENV === 'production' ? { exclude: ['error', 'warn'] } : false,
     },
