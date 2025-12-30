@@ -233,13 +233,11 @@ export const Navigation = () => {
         const deltaX = touchCurrentX.current - touchStartX.current;
         const deltaY = Math.abs(touchCurrentY.current - touchStartY.current);
 
-        // Reset transform
         if (sidebarRef.current) {
             sidebarRef.current.style.transform = '';
             sidebarRef.current.style.opacity = '';
         }
 
-        // If swiped left more than 80px and mostly horizontal, close the sidebar
         if (isSwiping && deltaX < -80 && deltaY < 100) {
             collapse();
         }

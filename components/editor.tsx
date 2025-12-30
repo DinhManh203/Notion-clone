@@ -26,7 +26,7 @@ const Editor = ({
     editable
 }: EditorProps) => {
     const { resolvedTheme } = useTheme();
-    const {edgestore} = useEdgeStore();
+    const { edgestore } = useEdgeStore();
     const isEditable = editable ?? true;
     const previousContentRef = useRef<string | undefined>(initialContent);
 
@@ -39,10 +39,10 @@ const Editor = ({
     }
 
     const editor: BlockNoteEditor = useCreateBlockNote({
-        initialContent: 
-            initialContent 
-            ? JSON.parse(initialContent) as PartialBlock[] 
-            : undefined,
+        initialContent:
+            initialContent
+                ? JSON.parse(initialContent) as PartialBlock[]
+                : undefined,
         uploadFile: handleUpload
     });
 
@@ -51,7 +51,7 @@ const Editor = ({
 
     return (
         <div>
-            <BlockNoteView 
+            <BlockNoteView
                 editor={editor}
                 theme={resolvedTheme === "dark" ? "dark" : 'light'}
                 editable={isEditable}
@@ -60,7 +60,7 @@ const Editor = ({
                     if (!isEditable) {
                         return;
                     }
-                    
+
                     const currentContent = JSON.stringify(editor.document, null, 2);
                     // Chỉ gọi onChange nếu content thực sự thay đổi
                     if (currentContent !== previousContentRef.current) {

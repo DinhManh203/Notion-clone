@@ -122,7 +122,7 @@ export const Publish = ({
             a.click();
             URL.revokeObjectURL(url);
 
-            toast.success("Đã tải xuống file .txt!");
+            toast.success("Đang tải xuống file .txt!");
         } catch (err) {
             toast.error("Lỗi khi tạo file .txt");
             console.error(err);
@@ -250,7 +250,7 @@ export const Publish = ({
 
             pdf.save(`${initialData.title || "note"}.pdf`);
 
-            toast.success("✅ Đã tải xuống file PDF!");
+            toast.success("✅ Đang tải xuống file PDF!");
         } catch (err) {
             toast.error("Lỗi khi tạo file PDF");
             console.error(err);
