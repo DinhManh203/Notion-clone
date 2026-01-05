@@ -68,9 +68,9 @@ const DocumentIdPage = ({
         return (
             <div className="h-full flex flex-col items-center justify-center space-y-4">
                 <Lock className="h-12 w-12 text-muted-foreground" />
-                <h2 className="text-xl font-semibold">Document không được chia sẻ</h2>
+                <h2 className="text-xl font-semibold">Tài liệu không được chia sẻ</h2>
                 <p className="text-sm text-muted-foreground">
-                    Document này đã bị hủy xuất bản và không còn khả dụng công khai.
+                    Tài liệu này đã bị hủy xuất bản và không còn khả dụng công khai.
                 </p>
             </div>
         );
