@@ -238,7 +238,7 @@ const Item = ({
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <div className='text-xs text-muted-foreground p-2'>
-                                Lần cuối sửa bởi: {user?.username}
+                                Sửa bởi: {user?.username}
                             </div>
                         </DropdownMenuContent>
                     </DropdownMenu>

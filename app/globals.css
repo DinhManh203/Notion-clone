@@ -117,8 +117,6 @@ body::-webkit-scrollbar {
   }
 }
 
-
-
 @layer base {
   * {
     @apply border-border;

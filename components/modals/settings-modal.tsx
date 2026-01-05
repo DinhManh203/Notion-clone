@@ -93,7 +93,6 @@ const SnowEffect = () => {
     return null;
 };
 
-/* ---------------- RAIN EFFECT ---------------- */
 const RainEffect = () => {
     useEffect(() => {
         const canvas = document.createElement("canvas");
@@ -166,7 +165,6 @@ const RainEffect = () => {
     return null;
 };
 
-/* ---------------- SAKURA EFFECT ---------------- */
 const SakuraEffect = () => {
     useEffect(() => {
         const canvas = document.createElement("canvas");
@@ -243,7 +241,6 @@ const SakuraEffect = () => {
     return null;
 };
 
-/* ---------------- SHOOTING STAR EFFECT ---------------- */
 const ShootingStarEffect = () => {
     useEffect(() => {
         const canvas = document.createElement("canvas");
@@ -325,7 +322,6 @@ const ShootingStarEffect = () => {
     return null;
 };
 
-/* ---------------- SETTINGS MODAL ---------------- */
 export const SettingsModal = () => {
     const settings = useSettings();
     const [isSnow, setIsSnow] = useState(false);

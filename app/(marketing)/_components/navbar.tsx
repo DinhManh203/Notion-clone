@@ -43,7 +43,7 @@ const Navbar = () => {
               },
             }}>
               <Button size={'sm'}>
-                Thử MiNote miễn phí
+                Thử MiNote miễn phí ngay
               </Button>
             </SignInButton>
           </>
