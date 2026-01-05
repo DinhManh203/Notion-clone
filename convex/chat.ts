@@ -253,7 +253,7 @@ export const sendMessage = action({
             const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
             const model = genAI.getGenerativeModel({
-                model: "gemini-2.5-pro",
+                model: "gemini-2.5-flash",
             });
 
             const chat = model.startChat({
@@ -370,10 +370,6 @@ export const sendMessage = action({
                 console.log("CSV URL from env:", csvUrl ? "Found" : "Not found");
 
                 if (csvUrl) {
-                    const sheetIdMatch = csvUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
-                    const sheetId = sheetIdMatch ? sheetIdMatch[1] : 'default';
-                    console.log("Sheet ID:", sheetId);
-
                     console.log("Fetching fresh sheet data...");
                     sheetData = await ctx.runAction(api.googleSheetsActions.fetchSheetData, {});
                     console.log("Sheet data fetched:", sheetData ? `${sheetData.length} chars` : "null");
