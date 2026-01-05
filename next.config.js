@@ -56,6 +56,7 @@ const nextConfig = {
 
         config.resolve.alias = {
             ...config.resolve.alias,
+            yjs: require.resolve('yjs'),
         };
 
         if (!dev && !isServer) {
