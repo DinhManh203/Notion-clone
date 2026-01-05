@@ -253,7 +253,7 @@ export const sendMessage = action({
             const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
             const model = genAI.getGenerativeModel({
-                model: "gemini-2.5-flash-lite",
+                model: "gemini-2.5-pro",
             });
 
             const chat = model.startChat({
@@ -390,6 +390,40 @@ export const sendMessage = action({
                 console.log("Không có sẵn dữ liệu trang tính");
             }
 
+            // Tự động tìm kiếm Wikipedia cho các từ khóa văn học
+            let wikipediaContext = "";
+            try {
+                const literatureKeywords = extractLiteratureKeywords(args.message);
+
+                if (literatureKeywords.length > 0) {
+                    console.log("Searching Wikipedia for:", literatureKeywords);
+
+                    // Limit to 2 searches to avoid slowdown
+                    for (const keyword of literatureKeywords.slice(0, 2)) {
+                        const wikiResult = await ctx.runAction(api.wikipediaActions.searchWikipedia, {
+                            query: keyword,
+                            lang: "vi",
+                        });
+
+                        if (wikiResult) {
+                            wikipediaContext += `\n\n📖 [Wikipedia: ${wikiResult.title}]\n${wikiResult.extract}\nNguồn: ${wikiResult.url}\n`;
+                            console.log(`Wikipedia found: ${wikiResult.title}`);
+                            console.log(`Extract: ${wikiResult.extract.substring(0, 100)}...`);
+                            console.log(`URL: ${wikiResult.url}`);
+                        } else {
+                            console.log(`❌ Wikipedia not found for: ${keyword}`);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error("Wikipedia search error:", error);
+            }
+
+            // Thêm Wikipedia context vào prompt nếu có
+            if (wikipediaContext) {
+                promptInstruction += `\n\n═══════════════════════════════════════════════════════════════\n📚 THÔNG TIN TỪ WIKIPEDIA (Tham khảo bổ sung):\n${wikipediaContext}\n\nSử dụng thông tin trên để bổ sung câu trả lời nếu liên quan. Kết hợp với kiến thức của bạn để trả lời đầy đủ, chính xác.\n═══════════════════════════════════════════════════════════════`;
+            }
+
             let prompt = `${promptInstruction}\n\nUser: ${args.message}`;
 
             const result = await chat.sendMessage(prompt);
@@ -455,3 +489,42 @@ export const sendMessage = action({
         }
     }
 });
+
+
+function extractLiteratureKeywords(message: string): string[] {
+    // Find capitalized words that could be author names or work titles
+    const capitalizedPattern = /[A-ZÀÁẠẢÃÂẦẤẬẨẪĂẰẮẶẲẴÈÉẸẺẼÊỀẾỆỂỄÌÍỊỈĨÒÓỌỎÕÔỒỐỘỔỖƠỜỚỢỞỠÙÚỤỦŨƯỪỨỰỬỮỲÝỴỶỸĐ][a-zàáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]+(?:\s+[A-ZÀÁẠẢÃÂẦẤẬẨẪĂẰẮẶẲẴÈÉẸẺẼÊỀẾỆỂỄÌÍỊỈĨÒÓỌỎÕÔỒỐỘỔỖƠỜỚỢỞỠÙÚỤỦŨƯỪỨỰỬỮỲÝỴỶỸĐ][a-zàáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]+)*/g;
+    const capitalizedWords = message.match(capitalizedPattern) || [];
+
+    // Literature-related keywords
+    const literatureKeywords = [
+        'tác giả', 'nhà thơ', 'nhà văn', 'tiểu thuyết', 'truyện', 'thơ',
+        'văn học', 'tác phẩm', 'bài thơ', 'cuốn sách', 'tiểu sử',
+        'sinh năm', 'mất năm', 'phong trào', 'trường phái', 'ngày sinh', 'ngày mất'
+    ];
+
+    // Check if message contains literature-related terms
+    const hasLiteratureContext = literatureKeywords.some(keyword =>
+        message.toLowerCase().includes(keyword)
+    );
+
+    if (hasLiteratureContext && capitalizedWords.length > 0) {
+        // Filter out ONLY standalone common words, not parts of names
+        // For example: "Việt Nam" is filtered, but "Nam Cao" is kept
+        const commonPhrases = ['Việt Nam', 'Hà Nội', 'Sài Gòn', 'Thành Phố Hồ Chí Minh'];
+        const filtered = capitalizedWords.filter(word => {
+            // Don't filter if it's part of a multi-word name
+            if (word.includes(' ')) {
+                // Check if it's a common phrase
+                return !commonPhrases.includes(word);
+            }
+            // For single words, be more lenient - only filter very common ones
+            const veryCommonWords = ['Việt', 'Hà', 'Sài', 'Thành', 'Phố', 'Chí', 'Minh'];
+            return !veryCommonWords.includes(word) && word.length > 2;
+        });
+
+        return filtered.slice(0, 3);
+    }
+
+    return [];
+}

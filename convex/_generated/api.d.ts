@@ -17,6 +17,7 @@ import type * as chat from "../chat.js";
 import type * as documents from "../documents.js";
 import type * as googleSheets from "../googleSheets.js";
 import type * as googleSheetsActions from "../googleSheetsActions.js";
+import type * as wikipediaActions from "../wikipediaActions.js";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -31,6 +32,7 @@ declare const fullApi: ApiFromModules<{
   documents: typeof documents;
   googleSheets: typeof googleSheets;
   googleSheetsActions: typeof googleSheetsActions;
+  wikipediaActions: typeof wikipediaActions;
 }>;
 export declare const api: FilterApi<
   typeof fullApi,
