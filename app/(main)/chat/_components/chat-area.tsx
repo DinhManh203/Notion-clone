@@ -18,6 +18,8 @@ import {
 import { Label } from "@/components/ui/label";
 import { useUser } from "@clerk/clerk-react";
 import { useTheme } from "next-themes";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 interface ChatAreaProps {
     activeSessionId: Id<"chatSessions"> | null;
@@ -374,9 +376,32 @@ export function ChatArea({
                                             </div>
                                         )}
 
-                                        <p className="whitespace-pre-wrap text-[14px] leading-relaxed">
-                                            {message.content}
-                                        </p>
+                                        {message.role === "assistant" ? (
+                                            <div className="prose prose-sm dark:prose-invert max-w-none text-[14px] leading-relaxed">
+                                                <ReactMarkdown
+                                                    remarkPlugins={[remarkGfm]}
+                                                    components={{
+                                                        // Custom styling for markdown elements
+                                                        p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                                                        ul: ({ children }) => <ul className="list-disc list-inside mb-2 space-y-1">{children}</ul>,
+                                                        ol: ({ children }) => <ol className="list-decimal list-inside mb-2 space-y-1">{children}</ol>,
+                                                        li: ({ children }) => <li className="ml-2">{children}</li>,
+                                                        strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
+                                                        em: ({ children }) => <em className="italic">{children}</em>,
+                                                        code: ({ children }) => <code className="bg-muted-foreground/10 px-1 py-0.5 rounded text-xs">{children}</code>,
+                                                        h1: ({ children }) => <h1 className="text-lg font-bold mb-2 mt-4 first:mt-0">{children}</h1>,
+                                                        h2: ({ children }) => <h2 className="text-base font-bold mb-2 mt-3 first:mt-0">{children}</h2>,
+                                                        h3: ({ children }) => <h3 className="text-sm font-semibold mb-1 mt-2 first:mt-0">{children}</h3>,
+                                                    }}
+                                                >
+                                                    {message.content}
+                                                </ReactMarkdown>
+                                            </div>
+                                        ) : (
+                                            <p className="whitespace-pre-wrap text-[14px] leading-relaxed">
+                                                {message.content}
+                                            </p>
+                                        )}
                                     </div>
 
                                     {/* Nút sao chép phía dưới bong bóng chat AI */}
