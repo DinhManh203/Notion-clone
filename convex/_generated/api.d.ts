@@ -17,6 +17,8 @@ import type * as chat from "../chat.js";
 import type * as documents from "../documents.js";
 import type * as googleSheets from "../googleSheets.js";
 import type * as googleSheetsActions from "../googleSheetsActions.js";
+import type * as http from "../http.js";
+import type * as uploadedFiles from "../uploadedFiles.js";
 import type * as wikipediaActions from "../wikipediaActions.js";
 
 /**
@@ -32,6 +34,8 @@ declare const fullApi: ApiFromModules<{
   documents: typeof documents;
   googleSheets: typeof googleSheets;
   googleSheetsActions: typeof googleSheetsActions;
+  http: typeof http;
+  uploadedFiles: typeof uploadedFiles;
   wikipediaActions: typeof wikipediaActions;
 }>;
 export declare const api: FilterApi<

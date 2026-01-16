@@ -454,7 +454,7 @@ export const sendMessage = action({
 
                     generatedTitle = generatedTitle.replace(/^["']|["']$/g, '');
 
-                    // Giới hạn 50 ký tự
+                    // Giới hạn 105 ký tự
                     if (generatedTitle.length > 105) {
                         generatedTitle = generatedTitle.slice(0, 100) + "...";
                     }
@@ -499,39 +499,78 @@ export const sendMessage = action({
 
 
 function extractLiteratureKeywords(message: string): string[] {
-    // Find capitalized words that could be author names or work titles
-    const capitalizedPattern = /[A-ZÀÁẠẢÃÂẦẤẬẨẪĂẰẮẶẲẴÈÉẸẺẼÊỀẾỆỂỄÌÍỊỈĨÒÓỌỎÕÔỒỐỘỔỖƠỜỚỢỞỠÙÚỤỦŨƯỪỨỰỬỮỲÝỴỶỸĐ][a-zàáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]+(?:\s+[A-ZÀÁẠẢÃÂẦẤẬẨẪĂẰẮẶẲẴÈÉẸẺẼÊỀẾỆỂỄÌÍỊỈĨÒÓỌỎÕÔỒỐỘỔỖƠỜỚỢỞỠÙÚỤỦŨƯỪỨỰỬỮỲÝỴỶỸĐ][a-zàáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]+)*/g;
-    const capitalizedWords = message.match(capitalizedPattern) || [];
-
-    // Literature-related keywords
+    // Từ khóa liên quan đến văn học và tiểu sử
     const literatureKeywords = [
         'tác giả', 'nhà thơ', 'nhà văn', 'tiểu thuyết', 'truyện', 'thơ',
         'văn học', 'tác phẩm', 'bài thơ', 'cuốn sách', 'tiểu sử',
-        'sinh năm', 'mất năm', 'phong trào', 'trường phái', 'ngày sinh', 'ngày mất'
+        'sinh năm', 'mất năm', 'phong trào', 'trường phái',
+        'ngày sinh', 'ngày mất', 'sinh ngày', 'mất ngày',
+        'bao nhiêu', 'nào', 'khi nào', 'năm nào'
     ];
 
-    // Check if message contains literature-related terms
+    // Kiểm tra xem tin nhắn có chứa các thuật ngữ liên quan đến văn học hay không
     const hasLiteratureContext = literatureKeywords.some(keyword =>
         message.toLowerCase().includes(keyword)
     );
 
-    if (hasLiteratureContext && capitalizedWords.length > 0) {
-        // Filter out ONLY standalone common words, not parts of names
-        // For example: "Việt Nam" is filtered, but "Nam Cao" is kept
-        const commonPhrases = ['Việt Nam', 'Hà Nội', 'Sài Gòn', 'Thành Phố Hồ Chí Minh'];
-        const filtered = capitalizedWords.filter(word => {
-            // Don't filter if it's part of a multi-word name
-            if (word.includes(' ')) {
-                // Check if it's a common phrase
-                return !commonPhrases.includes(word);
-            }
-            // For single words, be more lenient - only filter very common ones
-            const veryCommonWords = ['Việt', 'Hà', 'Sài', 'Thành', 'Phố', 'Chí', 'Minh'];
-            return !veryCommonWords.includes(word) && word.length > 2;
-        });
-
-        return filtered.slice(0, 3);
+    if (!hasLiteratureContext) {
+        return [];
     }
 
-    return [];
+    const namePattern = /\b[A-ZÀÁẠẢÃÂẦẤẬẨẪĂẰẮẶẲẴÈÉẸẺẼÊỀẾỆỂỄÌÍỊỈĨÒÓỌỎÕÔỒỐỘỔỖƠỜỚỢỞỠÙÚỤỦŨƯỪỨỰỬỮỲÝỴỶỸĐ][a-zàáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]+(?:\s+[A-ZÀÁẠẢÃÂẦẤẬẨẪĂẰẮẶẲẴÈÉẸẺẼÊỀẾỆỂỄÌÍỊỈĨÒÓỌỎÕÔỒỐỘỔỖƠỜỚỢỞỠÙÚỤỦŨƯỪỨỰỬỮỲÝỴỶỸĐ][a-zàáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]+){0,4}\b/g;
+
+    const potentialNames = message.match(namePattern) || [];
+
+    // Danh sách các cụm từ thông dụng cần loại bỏ
+    const commonPhrases = [
+        'Việt Nam', 'Hà Nội', 'Sài Gòn', 'Thành Phố Hồ Chí Minh',
+        'Đà Nẵng', 'Huế', 'Cần Thơ', 'Hải Phòng',
+        'Trung Quốc', 'Nhật Bản', 'Hàn Quốc', 'Thái Lan',
+        'Châu Âu', 'Châu Á', 'Châu Phi', 'Châu Mỹ',
+        'Thế Giới', 'Quốc Gia', 'Đất Nước'
+    ];
+
+    // Các từ đơn thông dụng cần loại bỏ
+    const commonSingleWords = [
+        'Việt', 'Hà', 'Sài', 'Thành', 'Phố', 'Chí', 'Minh', 'Đà', 'Nẵng',
+        'Cần', 'Thơ', 'Hải', 'Phòng', 'Quốc', 'Gia', 'Đất', 'Nước',
+        'Người', 'Ông', 'Bà', 'Anh', 'Chị', 'Em', 'Cô', 'Chú', 'Bác',
+        'Tác', 'Phẩm', 'Bài', 'Cuốn', 'Quyển', 'Tập'
+    ];
+
+    // Lọc và ưu tiên tên người
+    const filtered = potentialNames.filter(name => {
+        // Loại bỏ các cụm từ địa danh thông dụng
+        if (commonPhrases.includes(name)) {
+            return false;
+        }
+
+        // Nếu là tên nhiều từ (2+ từ), giữ lại trừ khi là địa danh
+        if (name.includes(' ')) {
+            return true;
+        }
+
+        // Nếu là từ đơn, loại bỏ các từ thông dụng và từ quá ngắn
+        return !commonSingleWords.includes(name) && name.length > 2;
+    });
+
+    // Ưu tiên tên người (có 2-3 từ) lên đầu
+    const sortedNames = filtered.sort((a, b) => {
+        const aWordCount = a.split(' ').length;
+        const bWordCount = b.split(' ').length;
+
+        // Ưu tiên tên 2-3 từ (thường là tên người Việt)
+        if (aWordCount >= 2 && aWordCount <= 3 && (bWordCount < 2 || bWordCount > 3)) {
+            return -1;
+        }
+        if (bWordCount >= 2 && bWordCount <= 3 && (aWordCount < 2 || aWordCount > 3)) {
+            return 1;
+        }
+
+        // Ưu tiên tên dài hơn
+        return bWordCount - aWordCount;
+    });
+
+    // Trả về tối đa 2 tên để tránh quá nhiều request Wikipedia
+    return sortedNames.slice(0, 2);
 }

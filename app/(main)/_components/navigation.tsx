@@ -11,7 +11,8 @@ import {
     Clock,
     MessageCircle,
     BadgeInfo,
-    Pin
+    Pin,
+    FolderOpen
 } from "lucide-react";
 import { usePathname, useParams, useRouter, useSearchParams } from "next/navigation";
 import React, { ElementRef, useEffect, useRef, useState, useCallback } from 'react';
@@ -283,6 +284,12 @@ export const Navigation = () => {
                         label="Chat"
                         icon={MessageCircle}
                         onMouseEnter={() => router.prefetch('/chat')}
+                    />
+                    <Item
+                        onClick={() => router.push('/files')}
+                        label="Files"
+                        icon={FolderOpen}
+                        onMouseEnter={() => router.prefetch('/files')}
                     />
                     <Popover open={openPinnedBox} onOpenChange={setOpenPinnedBox} modal={isMobile}>
                         <PopoverTrigger className="w-full mt-4">
