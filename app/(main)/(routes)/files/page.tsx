@@ -4,7 +4,7 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
-import { FileText, Image as ImageIcon, FileSpreadsheet, File, Eye, Trash2, Copy, Check, Upload } from "lucide-react";
+import { FileText, Image as ImageIcon, FileSpreadsheet, File, Eye, Trash2, Copy, Check, Upload, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useState, useRef } from "react";
 
@@ -17,6 +17,8 @@ export default function FilesPage() {
     const [copiedId, setCopiedId] = useState<string | null>(null);
     const [deletingId, setDeletingId] = useState<string | null>(null);
     const [isUploading, setIsUploading] = useState(false);
+    const [isDragging, setIsDragging] = useState(false);
+    const dragCounterRef = useRef(0);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const getFileIcon = (fileType: string) => {
@@ -36,7 +38,12 @@ export default function FilesPage() {
     const formatDate = (timestamp: number) => new Date(timestamp).toLocaleString("vi-VN");
 
     const handleCopy = async (url: string, id: string) => {
-        await navigator.clipboard.writeText(url);
+        // Chuyển relative URL thành absolute URL
+        const absoluteUrl = url.startsWith('/')
+            ? `${window.location.origin}${url}`
+            : url;
+
+        await navigator.clipboard.writeText(absoluteUrl);
         setCopiedId(id);
         toast.success("Đã sao chép URL!");
         setTimeout(() => setCopiedId(null), 2000);
@@ -46,9 +53,9 @@ export default function FilesPage() {
         setDeletingId(fileId);
         try {
             await deleteFile({ fileId });
-            toast.success("Đã xóa file!");
+            toast.success("Đã xóa tài liệu!");
         } catch (error) {
-            toast.error("Lỗi khi xóa file!");
+            toast.error("Lỗi khi xóa tài liệu!");
         } finally {
             setDeletingId(null);
         }
@@ -56,6 +63,15 @@ export default function FilesPage() {
 
     const handleFileUpload = async (files: FileList | null) => {
         if (!files || files.length === 0) return;
+
+        // Kiểm tra chỉ cho phép PDF
+        const invalidFiles = Array.from(files).filter(file => file.type !== "application/pdf");
+        if (invalidFiles.length > 0) {
+            toast.error("Chỉ cho phép tải lên tài liệu PDF!");
+            if (fileInputRef.current) fileInputRef.current.value = "";
+            return;
+        }
+
         setIsUploading(true);
 
         try {
@@ -82,7 +98,7 @@ export default function FilesPage() {
                     fileSize: file.size,
                 });
 
-                toast.success(`Đã upload "${file.name}"!`);
+                toast.success(`Đã tải lên "${file.name}"!`);
             }
         } catch (error) {
             toast.error("Lỗi khi upload file");
@@ -90,6 +106,37 @@ export default function FilesPage() {
             setIsUploading(false);
             if (fileInputRef.current) fileInputRef.current.value = "";
         }
+    };
+
+    const handleDragEnter = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dragCounterRef.current++;
+        setIsDragging(true);
+    };
+
+    const handleDragLeave = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dragCounterRef.current--;
+        if (dragCounterRef.current === 0) {
+            setIsDragging(false);
+        }
+    };
+
+    const handleDragOver = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+    };
+
+    const handleDrop = async (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dragCounterRef.current = 0;
+        setIsDragging(false);
+
+        const files = e.dataTransfer.files;
+        await handleFileUpload(files);
     };
 
     if (files === undefined) {
@@ -101,19 +148,32 @@ export default function FilesPage() {
     }
 
     return (
-        <div className="h-full flex flex-col">
+        <div
+            className="h-full flex flex-col"
+            onDragEnter={handleDragEnter}
+            onDragLeave={handleDragLeave}
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
+        >
             <div className="border-b p-6 flex items-center justify-between">
                 <div>
                     <h1 className="text-3xl font-bold">Tài liệu đã tải lên</h1>
-                    <p className="text-muted-foreground mt-2">Quản lý tất cả file bạn đã tải lên</p>
+                    <p className="text-muted-foreground mt-2">Quản lý tất cả tài liệu bạn đã tải lên</p>
                 </div>
                 <div>
-                    <input ref={fileInputRef} type="file" multiple onChange={(e) => handleFileUpload(e.target.files)} className="hidden" />
-                    <Button onClick={() => fileInputRef.current?.click()} disabled={isUploading} size="lg">
+                    <input
+                        ref={fileInputRef}
+                        type="file"
+                        multiple
+                        accept=".pdf,application/pdf"
+                        onChange={(e) => handleFileUpload(e.target.files)}
+                        className="hidden"
+                    />
+                    <Button onClick={() => fileInputRef.current?.click()} disabled={isUploading} size="sm">
                         {isUploading ? (
                             <>
-                                <div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-background border-t-transparent" />
-                                Đang tải tài liệu ...
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                Đang tải...
                             </>
                         ) : (
                             <>
@@ -125,70 +185,107 @@ export default function FilesPage() {
                 </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-6">
+            <div className="flex-1 overflow-y-auto">
                 {files.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
-                        <File className="h-16 w-16 mb-4" />
-                        <p className="text-lg">Chưa có tài liệu nào</p>
+                        <FileText className="h-16 w-16 mb-4 opacity-50" />
+                        <p className="text-lg font-medium">Chưa có tài liệu nào</p>
+                        <p className="text-sm">Kéo thả hoặc click "Tải tài liệu" để bắt đầu</p>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-7xl mx-auto">
-                        {files.map((file) => (
-                            <div key={file._id} className="border rounded-lg p-4 hover:shadow-lg transition-shadow bg-card">
-                                <div className="flex items-start gap-3 mb-3">
-                                    <div className="flex-shrink-0 mt-1">{getFileIcon(file.fileType)}</div>
-                                    <div className="flex-1 min-w-0">
-                                        <h3 className="font-medium truncate" title={file.fileName}>{file.fileName}</h3>
-                                        <p className="text-xs text-muted-foreground">{formatFileSize(file.fileSize)}</p>
-                                        <p className="text-xs text-muted-foreground">{formatDate(file.uploadedAt)}</p>
-                                    </div>
-                                </div>
-
-                                {file.fileType.startsWith("image/") && file.url && (
-                                    <div className="mb-3 rounded overflow-hidden bg-muted">
-                                        <img src={file.url} alt={file.fileName} className="w-full h-40 object-cover" />
-                                    </div>
-                                )}
-
-                                <div className="flex gap-2">
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        className="flex-1"
-                                        onClick={() => file.url && window.open(file.url, "_blank")}
-                                        disabled={!file.url}
-                                    >
-                                        <Eye className="h-4 w-4 mr-1" />
-                                        Xem tài liệu
-                                    </Button>
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        className="flex-1"
-                                        onClick={() => file.url && handleCopy(file.url, file._id)}
-                                        disabled={!file.url}
-                                    >
-                                        {copiedId === file._id ? (
-                                            <>
-                                                <Check className="h-4 w-4 mr-1 text-green-500" />
-                                                Đã sao chép
-                                            </>
-                                        ) : (
-                                            <>
-                                                <Copy className="h-4 w-4 mr-1" />
-                                                Sao chép URL
-                                            </>
-                                        )}
-                                    </Button>
-                                    <Button variant="outline" size="sm" onClick={() => handleDelete(file._id)} disabled={deletingId === file._id} className="hover:bg-destructive hover:text-destructive-foreground">
-                                        <Trash2 className="h-4 w-4" />
-                                    </Button>
-                                </div>
-                            </div>
-                        ))}
+                    <div className="max-w-6xl mx-auto p-6">
+                        <div className="bg-card rounded-lg border overflow-hidden">
+                            <table className="w-full">
+                                <thead className="bg-muted/50 border-b">
+                                    <tr>
+                                        <th className="text-left p-4 font-medium text-sm">Tên tài liệu</th>
+                                        <th className="text-left p-4 font-medium text-sm w-32">Kích thước</th>
+                                        <th className="text-left p-4 font-medium text-sm w-48">Ngày tải lên</th>
+                                        <th className="text-right p-4 font-medium text-sm w-48">Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {files.map((file, index) => (
+                                        <tr
+                                            key={file._id}
+                                            className={`border-b last:border-b-0 hover:bg-muted/30 transition-colors ${index % 2 === 0 ? 'bg-background' : 'bg-muted/10'
+                                                }`}
+                                        >
+                                            <td className="p-4">
+                                                <div className="flex items-center gap-3">
+                                                    <FileText className="h-5 w-5 text-red-500 flex-shrink-0" />
+                                                    <span className="font-medium truncate" title={file.fileName}>
+                                                        {file.fileName}
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td className="p-4 text-sm text-muted-foreground">
+                                                {formatFileSize(file.fileSize)}
+                                            </td>
+                                            <td className="p-4 text-sm text-muted-foreground">
+                                                {formatDate(file.uploadedAt)}
+                                            </td>
+                                            <td className="p-4">
+                                                <div className="flex items-center justify-end gap-2">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() => file.url && window.open(file.url, "_blank")}
+                                                        disabled={!file.url}
+                                                        className="h-8"
+                                                    >
+                                                        <Eye className="h-4 w-4 mr-1" />
+                                                        Xem
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() => file.url && handleCopy(file.url, file._id)}
+                                                        disabled={!file.url}
+                                                        className="h-8"
+                                                    >
+                                                        {copiedId === file._id ? (
+                                                            <>
+                                                                <Check className="h-4 w-4 mr-1 text-green-500" />
+                                                                Đã copy
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <Copy className="h-4 w-4 mr-1" />
+                                                                Copy
+                                                            </>
+                                                        )}
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() => handleDelete(file._id)}
+                                                        disabled={deletingId === file._id}
+                                                        className="h-8 hover:bg-destructive/10 hover:text-destructive"
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 )}
             </div>
+
+            {/* Drag overlay */}
+            {isDragging && (
+                <div className="fixed inset-0 bg-primary/10 backdrop-blur-sm z-50 flex items-center justify-center pointer-events-none transition-opacity duration-200">
+                    <div className="bg-background border-2 border-dashed border-primary rounded-lg p-12 text-center animate-in fade-in zoom-in-95 duration-200">
+                        <Upload className="h-10 w-10 mx-auto mb-4 text-primary" />
+                        <p className="text-xl font-semibold">Thả tài liệu PDF vào đây</p>
+                        <p className="text-muted-foreground mt-2">Chỉ chấp nhận tài liệu PDF</p>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
