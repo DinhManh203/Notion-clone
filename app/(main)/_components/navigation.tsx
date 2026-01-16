@@ -372,11 +372,12 @@ export const Navigation = () => {
                 {!!params.documentId ? (
                     <Navbar isCollapsed={isCollapsed} onResetWidth={resetWidth} />
                 ) : (
-                    <nav className="w-full bg-transparent px-4 py-3 flex items-center">
+                    <nav className="w-full bg-transparent px-4 py-3 flex items-center pointer-events-none">
                         {isCollapsed && (
                             <button
                                 onClick={resetWidth}
                                 className="
+                                    pointer-events-auto
                                     flex items-center justify-center
                                     h-8 w-8
                                     rounded-lg

@@ -155,8 +155,8 @@ export default function FilesPage() {
             onDragOver={handleDragOver}
             onDrop={handleDrop}
         >
-            <div className="border-b p-6 flex items-center justify-between">
-                <div>
+            <div className="border-b p-6 pt-14 md:pt-6 flex flex-col items-end gap-4 md:flex-row md:items-center md:justify-between">
+                <div className="text-right md:text-left">
                     <h1 className="text-3xl font-bold">Tài liệu đã tải lên</h1>
                     <p className="text-muted-foreground mt-2">Quản lý tất cả tài liệu bạn đã tải lên</p>
                 </div>
@@ -195,12 +195,12 @@ export default function FilesPage() {
                 ) : (
                     <div className="max-w-6xl mx-auto p-6">
                         <div className="bg-card rounded-lg border overflow-hidden">
-                            <table className="w-full">
+                            <table className="w-full table-fixed">
                                 <thead className="bg-muted/50 border-b">
                                     <tr>
                                         <th className="text-left p-4 font-medium text-sm">Tên tài liệu</th>
-                                        <th className="text-left p-4 font-medium text-sm w-32">Kích thước</th>
-                                        <th className="text-left p-4 font-medium text-sm w-48">Ngày tải lên</th>
+                                        <th className="text-left p-4 font-medium text-sm w-32 hidden md:table-cell">Kích thước</th>
+                                        <th className="text-left p-4 font-medium text-sm w-48 hidden lg:table-cell">Ngày tải lên</th>
                                         <th className="text-right p-4 font-medium text-sm w-48">Thao tác</th>
                                     </tr>
                                 </thead>
@@ -219,10 +219,10 @@ export default function FilesPage() {
                                                     </span>
                                                 </div>
                                             </td>
-                                            <td className="p-4 text-sm text-muted-foreground">
+                                            <td className="p-4 text-sm text-muted-foreground hidden md:table-cell">
                                                 {formatFileSize(file.fileSize)}
                                             </td>
-                                            <td className="p-4 text-sm text-muted-foreground">
+                                            <td className="p-4 text-sm text-muted-foreground hidden lg:table-cell">
                                                 {formatDate(file.uploadedAt)}
                                             </td>
                                             <td className="p-4">
@@ -232,27 +232,29 @@ export default function FilesPage() {
                                                         size="sm"
                                                         onClick={() => file.url && window.open(file.url, "_blank")}
                                                         disabled={!file.url}
-                                                        className="h-8"
+                                                        className="h-8 px-2 md:px-3"
+                                                        title="Xem tài liệu"
                                                     >
-                                                        <Eye className="h-4 w-4 mr-1" />
-                                                        Xem
+                                                        <Eye className="h-4 w-4 md:mr-1" />
+                                                        <span className="hidden md:inline">Xem</span>
                                                     </Button>
                                                     <Button
                                                         variant="ghost"
                                                         size="sm"
                                                         onClick={() => file.url && handleCopy(file.url, file._id)}
                                                         disabled={!file.url}
-                                                        className="h-8"
+                                                        className="h-8 px-2 md:px-3"
+                                                        title="Sao chép liên kết"
                                                     >
                                                         {copiedId === file._id ? (
                                                             <>
-                                                                <Check className="h-4 w-4 mr-1 text-green-500" />
-                                                                Đã copy
+                                                                <Check className="h-4 w-4 text-green-500 md:mr-1" />
+                                                                <span className="hidden md:inline">Đã copy</span>
                                                             </>
                                                         ) : (
                                                             <>
-                                                                <Copy className="h-4 w-4 mr-1" />
-                                                                Copy
+                                                                <Copy className="h-4 w-4 md:mr-1" />
+                                                                <span className="hidden md:inline">Copy</span>
                                                             </>
                                                         )}
                                                     </Button>
