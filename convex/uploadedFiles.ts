@@ -37,6 +37,13 @@ export const getFileById = query({
     },
 });
 
+export const getStorageUrl = query({
+    args: { storageId: v.id("_storage") },
+    handler: async (ctx, args) => {
+        return await ctx.storage.getUrl(args.storageId);
+    },
+});
+
 export const getFiles = query({
     handler: async (ctx) => {
         const identity = await ctx.auth.getUserIdentity();
@@ -49,23 +56,23 @@ export const getFiles = query({
             .collect();
 
         // Lấy URL cho tất cả file
-        return await Promise.all(
-            files.map(async (file) => {
-                let url: string | null = null;
+        return files.map((file) => {
+            let url: string | null = null;
 
-                if (file.storageId) {
-                    url = await ctx.storage.getUrl(file.storageId);
-                }
-                else if (file.fileUrl) {
-                    url = file.fileUrl;
-                }
+            // File mới: dùng API route (domain của website)
+            if (file.storageId) {
+                url = `/api/files/${file._id}`;
+            }
+            // File cũ: dùng EdgeStore URL
+            else if (file.fileUrl) {
+                url = file.fileUrl;
+            }
 
-                return {
-                    ...file,
-                    url,
-                };
-            })
-        );
+            return {
+                ...file,
+                url,
+            };
+        });
     },
 });
 
