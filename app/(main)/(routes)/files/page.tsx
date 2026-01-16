@@ -5,6 +5,16 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { FileText, Image as ImageIcon, FileSpreadsheet, File, Eye, Trash2, Copy, Check, Upload, Loader2 } from "lucide-react";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { useState, useRef } from "react";
 
@@ -16,6 +26,7 @@ export default function FilesPage() {
 
     const [copiedId, setCopiedId] = useState<string | null>(null);
     const [deletingId, setDeletingId] = useState<string | null>(null);
+    const [fileToDelete, setFileToDelete] = useState<string | null>(null);
     const [isUploading, setIsUploading] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
     const dragCounterRef = useRef(0);
@@ -49,7 +60,7 @@ export default function FilesPage() {
         setTimeout(() => setCopiedId(null), 2000);
     };
 
-    const handleDelete = async (fileId: Id<"uploadedFiles">) => {
+    const confirmDelete = async (fileId: Id<"uploadedFiles">) => {
         setDeletingId(fileId);
         try {
             await deleteFile({ fileId });
@@ -58,6 +69,7 @@ export default function FilesPage() {
             toast.error("Lỗi khi xóa tài liệu!");
         } finally {
             setDeletingId(null);
+            setFileToDelete(null);
         }
     };
 
@@ -261,9 +273,10 @@ export default function FilesPage() {
                                                     <Button
                                                         variant="ghost"
                                                         size="sm"
-                                                        onClick={() => handleDelete(file._id)}
+                                                        onClick={() => setFileToDelete(file._id)}
                                                         disabled={deletingId === file._id}
                                                         className="h-8 hover:bg-destructive/10 hover:text-destructive"
+                                                        title="Xóa tài liệu"
                                                     >
                                                         <Trash2 className="h-4 w-4" />
                                                     </Button>
@@ -288,6 +301,26 @@ export default function FilesPage() {
                     </div>
                 </div>
             )}
+
+            <AlertDialog open={!!fileToDelete} onOpenChange={() => setFileToDelete(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Bạn có chắc chắn muốn xóa?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Hành động này không thể hoàn tác. Tài liệu sẽ bị xóa vĩnh viễn khỏi hệ thống.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Hủy</AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={() => fileToDelete && confirmDelete(fileToDelete as Id<"uploadedFiles">)}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                            Xóa
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }
