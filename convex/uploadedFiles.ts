@@ -53,15 +53,9 @@ export const getFiles = query({
             files.map(async (file) => {
                 let url: string | null = null;
 
-                // File mới: dùng Convex storage URL
                 if (file.storageId) {
-                    const storageUrl = await ctx.storage.getUrl(file.storageId);
-                    // Thêm tên file vào query parameter để UX tốt hơn
-                    if (storageUrl) {
-                        url = `${storageUrl}?filename=${encodeURIComponent(file.fileName)}`;
-                    }
+                    url = await ctx.storage.getUrl(file.storageId);
                 }
-                // File cũ: dùng EdgeStore URL
                 else if (file.fileUrl) {
                     url = file.fileUrl;
                 }

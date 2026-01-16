@@ -287,7 +287,7 @@ export const Navigation = () => {
                     />
                     <Item
                         onClick={() => router.push('/files')}
-                        label="Files"
+                        label="Tài liệu"
                         icon={FolderOpen}
                         onMouseEnter={() => router.prefetch('/files')}
                     />

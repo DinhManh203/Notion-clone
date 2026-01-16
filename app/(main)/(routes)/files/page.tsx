@@ -104,8 +104,8 @@ export default function FilesPage() {
         <div className="h-full flex flex-col">
             <div className="border-b p-6 flex items-center justify-between">
                 <div>
-                    <h1 className="text-3xl font-bold">File đã upload</h1>
-                    <p className="text-muted-foreground mt-2">Quản lý tất cả file bạn đã upload</p>
+                    <h1 className="text-3xl font-bold">Tài liệu đã tải lên</h1>
+                    <p className="text-muted-foreground mt-2">Quản lý tất cả file bạn đã tải lên</p>
                 </div>
                 <div>
                     <input ref={fileInputRef} type="file" multiple onChange={(e) => handleFileUpload(e.target.files)} className="hidden" />
@@ -113,12 +113,12 @@ export default function FilesPage() {
                         {isUploading ? (
                             <>
                                 <div className="h-4 w-4 mr-2 animate-spin rounded-full border-2 border-background border-t-transparent" />
-                                Đang upload...
+                                Đang tải tài liệu ...
                             </>
                         ) : (
                             <>
                                 <Upload className="h-4 w-4 mr-2" />
-                                Upload file
+                                Tải tài liệu
                             </>
                         )}
                     </Button>
@@ -129,8 +129,7 @@ export default function FilesPage() {
                 {files.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
                         <File className="h-16 w-16 mb-4" />
-                        <p className="text-lg">Chưa có file nào</p>
-                        <p className="text-sm">Upload file để bắt đầu</p>
+                        <p className="text-lg">Chưa có tài liệu nào</p>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-7xl mx-auto">
@@ -160,7 +159,7 @@ export default function FilesPage() {
                                         disabled={!file.url}
                                     >
                                         <Eye className="h-4 w-4 mr-1" />
-                                        Xem
+                                        Xem tài liệu
                                     </Button>
                                     <Button
                                         variant="outline"
@@ -172,12 +171,12 @@ export default function FilesPage() {
                                         {copiedId === file._id ? (
                                             <>
                                                 <Check className="h-4 w-4 mr-1 text-green-500" />
-                                                Đã copy
+                                                Đã sao chép
                                             </>
                                         ) : (
                                             <>
                                                 <Copy className="h-4 w-4 mr-1" />
-                                                Copy URL
+                                                Sao chép URL
                                             </>
                                         )}
                                     </Button>
