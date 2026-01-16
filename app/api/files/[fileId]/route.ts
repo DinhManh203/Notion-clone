@@ -7,13 +7,16 @@ const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
 export async function GET(
     request: NextRequest,
-    { params }: { params: { fileId: string } }
+    { params }: { params: Promise<{ fileId: string }> }
 ) {
     try {
-        const fileId = params.fileId as Id<"uploadedFiles">;
+        const { fileId } = await params;
+        const fileIdTyped = fileId as Id<"uploadedFiles">;
 
         // Lấy thông tin file từ Convex
-        const file = await convex.query(api.uploadedFiles.getFileById, { fileId });
+        const file = await convex.query(api.uploadedFiles.getFileById, {
+            fileId: fileIdTyped
+        });
 
         if (!file) {
             return new NextResponse("File not found", { status: 404 });
