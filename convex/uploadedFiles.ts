@@ -59,9 +59,9 @@ export const getFiles = query({
         return files.map((file) => {
             let url: string | null = null;
 
-            // File mới: dùng API route (domain của website)
+            // File mới: dùng API route với tên file trong URL
             if (file.storageId) {
-                url = `/api/files/${file._id}`;
+                url = `/api/files/${file._id}/${encodeURIComponent(file.fileName)}`;
             }
             // File cũ: dùng EdgeStore URL
             else if (file.fileUrl) {
