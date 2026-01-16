@@ -190,7 +190,7 @@ export default function FilesPage() {
                     <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
                         <FileText className="h-16 w-16 mb-4 opacity-50" />
                         <p className="text-lg font-medium">Chưa có tài liệu nào</p>
-                        <p className="text-sm">Kéo thả hoặc click "Tải tài liệu" để bắt đầu</p>
+                        <p className="text-sm">Kéo thả hoặc click &quot;Tải tài liệu&quot; để bắt đầu</p>
                     </div>
                 ) : (
                     <div className="max-w-6xl mx-auto p-6">
