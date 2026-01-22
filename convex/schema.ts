@@ -63,8 +63,8 @@ export default defineSchema({
   uploadedFiles: defineTable({
     userId: v.string(),
     fileName: v.string(),
-    storageId: v.optional(v.id("_storage")), // Convex storage ID (file mới)
-    fileUrl: v.optional(v.string()), // EdgeStore URL (file cũ)
+    storageId: v.optional(v.id("_storage")),
+    fileUrl: v.optional(v.string()),
     fileType: v.string(),
     fileSize: v.number(),
     uploadedAt: v.number(),

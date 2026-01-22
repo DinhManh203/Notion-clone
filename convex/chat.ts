@@ -266,7 +266,7 @@ export const sendMessage = action({
 
             // Base system prompt - chỉ tập trung vào văn học và hướng dẫn
             let promptInstruction = `
-                    Bạn là trợ lý AI chuyên về VĂN HỌC của ứng dụng ghi chú MiNote.
+                    Bạn là trợ lý của ứng dụng ghi chú MiNote.
 
                     PHẠM VI CHUYÊN MÔN:
                     1. VĂN HỌC VIỆT NAM:

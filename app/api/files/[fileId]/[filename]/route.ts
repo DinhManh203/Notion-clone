@@ -26,7 +26,6 @@ export async function GET(
         let fileUrl: string;
 
         if (file.storageId) {
-            // File mới: lấy URL từ Convex storage
             const storageUrl = await convex.query(api.uploadedFiles.getStorageUrl, {
                 storageId: file.storageId
             });
@@ -43,7 +42,6 @@ export async function GET(
             return new NextResponse("File URL not found", { status: 404 });
         }
 
-        // Fetch file từ storage
         const response = await fetch(fileUrl);
 
         if (!response.ok) {
