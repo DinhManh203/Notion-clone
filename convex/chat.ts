@@ -264,7 +264,6 @@ export const sendMessage = action({
                 },
             });
 
-            // Base system prompt - chỉ tập trung vào văn học và hướng dẫn
             let promptInstruction = `
                     Bạn là trợ lý của ứng dụng ghi chú MiNote.
 
