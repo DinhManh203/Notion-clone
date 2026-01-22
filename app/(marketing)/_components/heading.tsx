@@ -38,6 +38,10 @@ const Heading = () => {
                     elements: {
                         footer: { display: 'none' },
                         footerAction__branding: { display: 'none' },
+                        dividerRow: { display: 'none' },
+                        formFieldLabel: { display: 'none' },
+                        formFieldInput: { display: 'none' },
+                        formButtonPrimary: { display: 'none' },
                     },
                 }}>
                     <Button>

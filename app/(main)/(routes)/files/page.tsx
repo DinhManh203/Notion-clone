@@ -87,33 +87,41 @@ export default function FilesPage() {
         setIsUploading(true);
 
         try {
-            for (let i = 0; i < files.length; i++) {
-                const file = files[i];
+            await Promise.all(
+                Array.from(files).map(async (file) => {
+                    try {
+                        // Get upload URL from Convex
+                        const uploadUrl = await generateUploadUrl();
 
-                // Get upload URL from Convex
-                const uploadUrl = await generateUploadUrl();
+                        // Upload file to Convex storage
+                        const result = await fetch(uploadUrl, {
+                            method: "POST",
+                            headers: { "Content-Type": file.type },
+                            body: file,
+                        });
 
-                // Upload file to Convex storage
-                const result = await fetch(uploadUrl, {
-                    method: "POST",
-                    headers: { "Content-Type": file.type },
-                    body: file,
-                });
+                        if (!result.ok) {
+                            throw new Error(`Failed to upload ${file.name}`);
+                        }
 
-                const { storageId } = await result.json();
+                        const { storageId } = await result.json();
 
-                // Save metadata to database
-                await saveFile({
-                    fileName: file.name,
-                    storageId,
-                    fileType: file.type,
-                    fileSize: file.size,
-                });
+                        await saveFile({
+                            fileName: file.name,
+                            storageId,
+                            fileType: file.type,
+                            fileSize: file.size,
+                        });
 
-                toast.success(`Đã tải lên "${file.name}"!`);
-            }
+                        toast.success(`Đã tải lên "${file.name}"!`);
+                    } catch (error) {
+                        console.error(`Error uploading ${file.name}:`, error);
+                        toast.error(`Lỗi khi tải lên "${file.name}"`);
+                    }
+                })
+            );
         } catch (error) {
-            toast.error("Lỗi khi upload file");
+            toast.error("Lỗi trong quá trình upload file");
         } finally {
             setIsUploading(false);
             if (fileInputRef.current) fileInputRef.current.value = "";
